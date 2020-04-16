@@ -3,11 +3,12 @@ declare module "swagger-code-generate/src/config" {
     export interface IConfig {
         injection?: Record<string, string>;
         destination?: string;
+        decorators?: string[];
         defaults?: Partial<Record<'body' | 'header' | 'query', string[]>>;
         rename?: Partial<Record<'method' | 'parameterType' | 'responseType', (...args: any) => string>>;
         templates?: Partial<Record<'type' | 'index', string>>;
         ignores?: Partial<Record<'definitions' | 'body' | 'header' | 'query', string[]>>;
-        imports?: Record<string, string>;
+        imports?: string[];
         filename?: (args: {
             name: string;
         }) => string;

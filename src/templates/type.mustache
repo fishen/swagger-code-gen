@@ -1,12 +1,7 @@
 /* tslint:disable */
 import { {{&config.injection.injectable}}, {{&config.injection.inject}} } from '{{&config.injection.module}}';
 {{#config.imports}}
-{{#item}}
-import {{&item}} from "{{&module}}";
-{{/item}}
-{{^item}}
-import "{{&module}}";
-{{/item}}
+{{{.}}}
 {{/config.imports}}
 
 type Select<T, K> = K extends keyof T ? T[K] : T;
@@ -66,6 +61,9 @@ interface {{&type}} {
  * @version {{{info.version}}}
  * @see http://{{&host}}{{&basePath}}swagger-ui.html
  */
+{{#config.decorators}}
+{{{.}}}
+{{/config.decorators}}
 @{{&config.injection.injectable}}()
 export default class {
 
