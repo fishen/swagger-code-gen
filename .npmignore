@@ -1,0 +1,14 @@
+test/
+package-lock.json
+*.tgz
+examples/
+src/
+apis/
+.vscode/
+tslint.json
+tsconfig.json
+webpack.config.js
+gulpfile.js
+dts/
+CHANGELOGS.md
+index.ts

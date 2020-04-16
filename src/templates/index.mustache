@@ -1,0 +1,11 @@
+{{#apis.length}}
+{{#apis}}
+import {{&classname}} from './{{&module}}';
+{{/apis}}
+
+export {
+{{#apis}}
+    {{&classname}},
+{{/apis}}
+}
+{{/apis.length}}

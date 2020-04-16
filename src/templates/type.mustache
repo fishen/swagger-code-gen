@@ -1,0 +1,88 @@
+/* tslint:disable */
+import { {{&config.injection.injectable}}, {{&config.injection.inject}} } from '{{&config.injection.module}}';
+{{#config.imports}}
+{{#item}}
+import {{&item}} from "{{&module}}";
+{{/item}}
+{{^item}}
+import "{{&module}}";
+{{/item}}
+{{/config.imports}}
+
+type Select<T, K> = K extends keyof T ? T[K] : T;
+type IHttp = {
+    request(options: {
+        url: string,
+        method: string,
+        query?: Record<string, any>,
+        body?: Record<string, any>,
+        header?: Record<string, any>
+    }): Promise<any>;
+}
+
+{{#definitions}}
+/**
+ * {{{title}}}
+ **/
+interface {{&type}}{{#genericProperties.length}}<{{#genericProperties}}T{{&.}} = any,{{/genericProperties}}>{{/genericProperties.length}} {
+    {{#properties}}
+    /**
+     * {{{description}}}.{{{originTitle}}}
+     {{#default}}
+     * @default {{&default}}
+     {{/default}}
+     {{#deprecated}}
+     * @deprecated
+     {{/deprecated}}
+     **/
+    {{&name}}{{^required}}?{{/required}}: {{#generic}}T{{&name}}{{/generic}}{{^generic}}{{&type}}{{/generic}};
+    {{/properties}}
+}
+{{/definitions}}
+
+{{#methods}}
+{{#parameters}}
+{{#properties.length}}
+interface {{&type}} {
+    {{#properties}}
+    /**
+     * {{{description}}}
+     {{#default}}
+     * @default {{&default}}
+     {{/default}}
+     {{#deprecated}}
+     * @deprecated
+     {{/deprecated}}
+     **/
+    {{&name}}{{^required}}?{{/required}}: {{&type}};
+    {{/properties}}
+}
+{{/properties.length}}
+{{/parameters}}
+{{/methods}}
+
+/**
+ * {{{info.title}}}
+ * @version {{{info.version}}}
+ * @see http://{{&host}}{{&basePath}}swagger-ui.html
+ */
+@{{&config.injection.injectable}}()
+export default class {
+
+    constructor(
+        @{{&config.injection.inject}}({{&config.injection.http}}) private http: IHttp
+    ) { }
+
+{{#methods}}
+    /**
+     * {{{summary}}}
+     {{#deprecated}}
+     * @deprecated
+     {{/deprecated}}
+     */
+    {{&name}}({{#parameters}}{{&name}}: {{&type}}, {{/parameters}}): Promise<{{&response}}> {
+        return this.http.request({ url: "{{&url}}", method: "{{&method}}", {{#parameters}}{{&name}}, {{/parameters}}});
+    }
+
+{{/methods}}
+}
