@@ -8,6 +8,10 @@ module.exports = {
     entry: './src/index.ts',
     externals: [nodeExternals()],
     devtool: "source-map",
+    target: 'node',
+    node: {
+        __dirname: false
+    },
     module: {
         rules: [{ test: /\.ts(x?)$/, loader: "ts-loader" }]
     },

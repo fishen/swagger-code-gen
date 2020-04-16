@@ -30,8 +30,8 @@ export const defaultConfig: IConfig = {
         parameterType: ({ method, type }) => _.upperFirst(method) + _.upperFirst(type),
     },
     templates: {
-        type: './templates/type.mustache',
-        index: './templates/index.mustache',
+        type: path.join(__dirname, 'templates/type.mustache'),
+        index: path.join(__dirname, 'templates/index.mustache'),
     },
     filename: ({ name }) => `${name}-api.ts`,
     classname: ({ name }) => _.upperFirst(_.camelCase(name)) + 'API',
