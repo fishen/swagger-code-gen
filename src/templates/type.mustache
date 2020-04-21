@@ -1,17 +1,23 @@
 /* tslint:disable */
-import { {{&config.injection.injectable}}, {{&config.injection.inject}} } from '{{&config.injection.module}}';
+import { {{&config.injection.injectable}}, {{&config.injection.inject}}, {{&config.injection.injector}} } from '{{&config.injection.module}}';
 {{#config.imports}}
 {{{.}}}
 {{/config.imports}}
 
-type Select<T, K> = K extends keyof T ? T[K] : T;
-type IHttp = {
+export type $Select<T, K> = K extends keyof T ? T[K] : T;
+export type $Optional<T, K extends keyof any> = Omit<T, K> & {
+    [P in Extract<K, keyof T>]?: T[P];
+}
+export type $Required<T> = {
+    [P in keyof T]-?: $Required<T[P]>;
+}
+export interface IHttp {
     request(options: {
         url: string,
         method: string,
         query?: Record<string, any>,
         body?: Record<string, any>,
-        header?: Record<string, any>
+        header?: Record<string, any>,
     }): Promise<any>;
 }
 
@@ -38,7 +44,7 @@ interface {{&type}}{{#genericProperties.length}}<{{#genericProperties}}T{{&.}} =
 {{#methods}}
 {{#parameters}}
 {{#properties.length}}
-interface {{&type}} {
+interface {{&typeName}} {
     {{#properties}}
     /**
      * {{{description}}}
@@ -71,6 +77,14 @@ export default class {
         @{{&config.injection.inject}}({{&config.injection.http}}) private http: IHttp
     ) { }
 
+    private getDefaultValue(key: string) {
+        try {
+            return Injector.get(key);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
 {{#methods}}
     /**
      * {{{summary}}}
@@ -78,8 +92,13 @@ export default class {
      * @deprecated
      {{/deprecated}}
      */
-    {{&name}}({{#parameters}}{{&name}}: {{&type}}, {{/parameters}}): Promise<{{&response}}> {
-        return this.http.request({ url: "{{&url}}", method: "{{&method}}", {{#parameters}}{{&name}}, {{/parameters}}});
+    {{{name}}}({{#parameters}}{{{name}}}: {{&type}}, {{/parameters}}): Promise<{{{response}}}> {
+        {{#defaults}}
+        if ({{{in}}}['{{{name}}}'] === undefined) {
+            {{{in}}}['{{{name}}}'] = this.getDefaultValue('{{{name}}}');
+        }
+        {{/defaults}}
+        return this.http.request({ url: "{{&url}}", method: "{{&method}}", {{#parameters}}{{{name}}}, {{/parameters}}});
     }
 
 {{/methods}}

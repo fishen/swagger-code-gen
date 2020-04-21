@@ -5,7 +5,7 @@ export interface IConfig {
     injection?: Record<string, string>;
     destination?: string;
     decorators?: string[];
-    defaults?: Partial<Record<'body' | 'header' | 'query', string[]>>;
+    defaults?: string[];
     rename?: Partial<Record<'method' | 'parameterType' | 'responseType', (...args: any) => string>>;
     templates?: Partial<Record<'type' | 'index', string>>;
     ignores?: Partial<Record<'definitions' | 'body' | 'header' | 'query', string[]>>;
@@ -24,6 +24,7 @@ export const defaultConfig: IConfig = {
         module: 'mp-inject',
         injectable: 'injectable',
         inject: 'inject',
+        injector: "Injector",
         http: "'http'",
     },
     rename: {

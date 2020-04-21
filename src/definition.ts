@@ -13,7 +13,7 @@ export class Definition {
     host: string;
     properties?: Property[];
     genericProperties?: string[];
-    constructor(data: ISwaggerDefinition & { title: string }, config: IConfig) {
+    constructor(data: ISwaggerDefinition, config: IConfig) {
         this.title = data.title;
         this.type = Generator.getType({ type: this.title }, config);
         this.generic = /<.+>$/.test(this.type);

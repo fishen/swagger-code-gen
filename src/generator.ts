@@ -12,6 +12,7 @@ export class Generator {
     config: IConfig;
     constructor(config: IConfig) {
         this.config = config;
+        this.config.defaults = Array.isArray(this.config.defaults) ? this.config.defaults : [];
     }
 
     static render(view: object, template: string, filename: string, config: IConfig) {
@@ -68,7 +69,7 @@ export class Generator {
                     });
                 return {
                     ...json,
-                    methods: Method.parse({ ...json, definitions }, this.config),
+                    methods: Method.parse({ ...json }, definitions, this.config),
                     definitions: definitions.filter(d => !d.generic),
                     config: this.config
                 }

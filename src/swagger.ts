@@ -15,6 +15,8 @@ export interface ISwaggerDefinition {
     properties: Record<string, ISwaggerDefinitionProperty>;
     required?: string[];
     type: string;
+    title: string;
+    additionalProperties?: Record<'type', any>
 }
 export interface ISwaggerPathParameter {
     default: any;

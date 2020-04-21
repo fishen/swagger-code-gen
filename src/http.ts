@@ -4,6 +4,6 @@ export interface IHttp {
         method: string,
         query?: Record<string, any>,
         body?: Record<string, any>,
-        header?: Record<string, any>
+        header?: Record<string, any>,
     }): Promise<any>;
 }

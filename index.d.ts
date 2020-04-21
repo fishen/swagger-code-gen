@@ -4,7 +4,7 @@ declare module "swagger-code-generate/src/config" {
         injection?: Record<string, string>;
         destination?: string;
         decorators?: string[];
-        defaults?: Partial<Record<'body' | 'header' | 'query', string[]>>;
+        defaults?: string[];
         rename?: Partial<Record<'method' | 'parameterType' | 'responseType', (...args: any) => string>>;
         templates?: Partial<Record<'type' | 'index', string>>;
         ignores?: Partial<Record<'definitions' | 'body' | 'header' | 'query', string[]>>;
@@ -39,6 +39,8 @@ declare module "swagger-code-generate/src/swagger" {
         properties: Record<string, ISwaggerDefinitionProperty>;
         required?: string[];
         type: string;
+        title: string;
+        additionalProperties?: Record<'type', any>;
     }
     export interface ISwaggerPathParameter {
         default: any;
@@ -106,9 +108,7 @@ declare module "swagger-code-generate/src/definition" {
         host: string;
         properties?: Property[];
         genericProperties?: string[];
-        constructor(data: ISwaggerDefinition & {
-            title: string;
-        }, config: IConfig);
+        constructor(data: ISwaggerDefinition, config: IConfig);
         static parse(swagger: ISwagger, config: IConfig): Definition[];
     }
 }
@@ -120,10 +120,13 @@ declare module "swagger-code-generate/src/param" {
     export class Param {
         name: string;
         type: string;
+        in: 'body' | 'query' | 'header';
         properties: Property[];
+        typeName: string;
         constructor(data: {
             name: string;
             type: string;
+            in: 'body' | 'query' | 'header';
             properties?: Property[];
         });
         static from(method: Method, params: ISwaggerPathParameter[], config: IConfig): Param[];
@@ -133,6 +136,7 @@ declare module "swagger-code-generate/src/method" {
     import { Param } from 'swagger-code-generate/src/param';
     import { IConfig } from 'swagger-code-generate/src/config';
     import { ISwagger, ISwaggerPath } from 'swagger-code-generate/src/swagger';
+    import { Definition } from 'swagger-code-generate/src/definition';
     export class Method {
         method: string;
         path: string;
@@ -140,15 +144,22 @@ declare module "swagger-code-generate/src/method" {
         deprecated: boolean;
         operationId: string;
         summary: string;
-        tags: string[];
+        tags?: string[];
         name: string;
         parameters: Param[];
+        defaults?: {
+            name: string;
+            in: string;
+        }[];
         response: string;
         constructor(data: ISwaggerPath & {
             path: string;
             method: string;
         }, config: IConfig, swagger: ISwagger);
-        static parse(swagger: ISwagger, config: IConfig): any[];
+        setDefault(param: Param, properties: {
+            name: string;
+        }[], defaults: string[]): void;
+        static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[];
     }
 }
 declare module "swagger-code-generate/src/generator" {
