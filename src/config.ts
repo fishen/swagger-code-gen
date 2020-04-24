@@ -24,7 +24,6 @@ export const defaultConfig: IConfig = {
         module: 'mp-inject',
         injectable: 'injectable',
         inject: 'inject',
-        injector: "Injector",
         http: "'http'",
     },
     rename: {

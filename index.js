@@ -207,9 +207,9 @@ class Property {
         this.name = data.name;
         this.type = generator_1.Generator.getType(data, config);
         this.description = data.description;
-        // this.default = data.default;
+        this.default = data.default;
         // this.deprecated = data.deprecated;
-        // this.required = data.required;
+        this.required = data.required;
         this.generic = false;
         this.otherType = !!(data.$ref || data.type === 'array' && data.items.$ref);
     }
@@ -309,7 +309,6 @@ const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
 const generator_1 = __webpack_require__(2);
 class Method {
     constructor(data, config, swagger) {
-        this.defaults = [];
         this.method = data.method;
         this.path = data.path;
         this.url = `${swagger.basePath}/${data.path}`.replace(/\/+/g, '/');
@@ -324,14 +323,15 @@ class Method {
         this.name = config.rename.method(this);
         this.parameters = param_1.Param.from(this, data.parameters, config);
     }
-    setDefault(param, properties, defaults) {
-        if (!Array.isArray(properties))
+    setDefault(param, defaults) {
+        if (!Array.isArray(param.properties))
             return;
-        const names = properties.filter(p => defaults.includes(p.name)).map(p => p.name);
-        if (!names.length)
+        const defaultNames = param.properties.filter(p => defaults.includes(p.name)).map(p => p.name);
+        if (!defaultNames.length)
             return;
-        param.type = `$Optional<${param.type}, ${names.map(p => `'${p}'`).join(' | ')}>`;
-        this.defaults.push(...names.map(name => ({ name, in: param.in })));
+        param.type = `$Optional<${param.type}, ${defaultNames.map(p => `'${p}'`).join(' | ')}>`;
+        this.defaults = this.defaults || [];
+        this.defaults.push({ key: param.in, value: defaultNames });
     }
     static parse(swagger, definitions, config) {
         const methods = Object.keys(swagger.paths)
@@ -339,15 +339,19 @@ class Method {
             const value = swagger.paths[path];
             Object.keys(value).map(method => {
                 const m = new Method({ method, path, ...value[method] }, config, swagger);
-                m.parameters.forEach(param => {
+                m.parameters.forEach((param) => {
                     if (param.in === 'body') {
                         const d = definitions.find(d => d.type === param.type);
-                        m.setDefault(param, d && d.properties, config.defaults);
+                        param.properties = d && d.properties;
                     }
-                    else {
-                        m.setDefault(param, param.properties, config.defaults);
-                    }
+                    m.setDefault(param, config.defaults);
                 });
+                for (let index = m.parameters.length - 1; index >= 0; index--) {
+                    const p = m.parameters[index];
+                    const defaults = m.defaults && m.defaults.find(x => x.key === p.in);
+                    p.required = !p.properties || p.properties.some(p => p.required && (!defaults || !defaults.value.includes(p.name)));
+                    p.required = p.required ? p.required : !m.parameters.slice(index).every(p => !p.required);
+                }
                 result.push(m);
             });
             return result;
@@ -376,6 +380,7 @@ class Param {
         this.typeName = data.type;
         this.properties = data.properties;
         this.in = data.in;
+        this.referenced = data.in === 'body';
     }
     static from(method, params, config) {
         const { ignores } = config;
@@ -383,7 +388,7 @@ class Param {
             params = params.filter(x => !(x.in in ignores && ignores[x.in].includes(x.name)));
         }
         const groupedParams = lodash_1.default.groupBy(params, 'in');
-        const result = Object.keys(groupedParams).reduce((result, key) => {
+        const parameters = Object.keys(groupedParams).reduce((result, key) => {
             if (key === 'body') {
                 const p = groupedParams[key][0];
                 result[key] = new Param({ name: key, in: key, type: generator_1.Generator.getType(p, config) });
@@ -395,7 +400,10 @@ class Param {
             }
             return result;
         }, {});
-        return ['query', 'body', 'header'].filter(x => x in result).map(key => result[key]);
+        const header = new Param({ name: 'header', type: 'object', in: 'header', properties: [] });
+        parameters.header = parameters.header || header;
+        const result = ['query', 'body', 'header'].filter(x => x in parameters).map(key => parameters[key]);
+        return result;
     }
 }
 exports.Param = Param;
@@ -417,7 +425,6 @@ exports.defaultConfig = {
         module: 'mp-inject',
         injectable: 'injectable',
         inject: 'inject',
-        injector: "Injector",
         http: "'http'",
     },
     rename: {

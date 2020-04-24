@@ -15,12 +15,15 @@ export class Param {
     in: 'body' | 'query' | 'header';
     properties: Property[];
     typeName: string;
+    referenced: boolean;
+    required?: boolean;
     constructor(data: { name: string, type: string, in: 'body' | 'query' | 'header', properties?: Property[] }) {
         this.name = data.name;
         this.type = data.type;
         this.typeName = data.type;
         this.properties = data.properties;
         this.in = data.in;
+        this.referenced = data.in === 'body';
     }
 
     static from(method: Method, params: ISwaggerPathParameter[], config: IConfig) {
@@ -29,7 +32,7 @@ export class Param {
             params = params.filter(x => !(x.in in ignores && ignores[x.in].includes(x.name)));
         }
         const groupedParams = _.groupBy(params, 'in');
-        const result = Object.keys(groupedParams).reduce((result: Record<string, Param>, key) => {
+        const parameters = Object.keys(groupedParams).reduce((result: Record<string, Param>, key) => {
             if (key === 'body') {
                 const p = groupedParams[key][0];
                 result[key] = new Param({ name: key, in: key, type: Generator.getType(p, config) });
@@ -40,6 +43,9 @@ export class Param {
             }
             return result;
         }, {});
-        return ['query', 'body', 'header'].filter(x => x in result).map(key => result[key]);
+        const header = new Param({ name: 'header', type: 'object', in: 'header', properties: [] });
+        parameters.header = parameters.header || header;
+        const result = ['query', 'body', 'header'].filter(x => x in parameters).map(key => parameters[key]);
+        return result;
     }
 }

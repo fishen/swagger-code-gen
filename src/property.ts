@@ -12,13 +12,13 @@ export class Property {
     required: boolean;
     generic: boolean;
     otherType: boolean;
-    constructor(data: ISwaggerDefinitionProperty & { name: string }, config: IConfig) {
+    constructor(data: ISwaggerDefinitionProperty & { name: string, default?: any, required?: any }, config: IConfig) {
         this.name = data.name;
         this.type = Generator.getType(data, config);
         this.description = data.description;
-        // this.default = data.default;
+        this.default = data.default;
         // this.deprecated = data.deprecated;
-        // this.required = data.required;
+        this.required = data.required;
         this.generic = false;
         this.otherType = !!(data.$ref || data.type === 'array' && data.items.$ref);
     }

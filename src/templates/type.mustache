@@ -12,6 +12,10 @@ export type $Required<T> = {
     [P in keyof T]-?: $Required<T[P]>;
 }
 export interface IHttp {
+    /**
+     * Make a HTTP request operation.
+     * @param options The parameters required by the request.
+     */
     request(options: {
         url: string,
         method: string,
@@ -19,6 +23,14 @@ export interface IHttp {
         body?: Record<string, any>,
         header?: Record<string, any>,
     }): Promise<any>;
+
+    /**
+     * Get the default value
+     * @param name The param name
+     * @param from The param source 'query','body','header'.
+     * @param url The api url string.
+     */
+    getDefaultValue?(name: string, from: string, url: string): any;
 }
 
 {{#definitions}}
@@ -43,6 +55,7 @@ interface {{&type}}{{#genericProperties.length}}<{{#genericProperties}}T{{&.}} =
 
 {{#methods}}
 {{#parameters}}
+{{^referenced}}
 {{#properties.length}}
 interface {{&typeName}} {
     {{#properties}}
@@ -59,6 +72,7 @@ interface {{&typeName}} {
     {{/properties}}
 }
 {{/properties.length}}
+{{/referenced}}
 {{/parameters}}
 {{/methods}}
 
@@ -76,30 +90,28 @@ export default class {
     constructor(
         @{{&config.injection.inject}}({{&config.injection.http}}) private http: IHttp
     ) { }
-
-    private getDefaultValue(key: string) {
-        try {
-            return Injector.get(key);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
 {{#methods}}
+
     /**
      * {{{summary}}}
      {{#deprecated}}
      * @deprecated
      {{/deprecated}}
      */
-    {{{name}}}({{#parameters}}{{{name}}}: {{&type}}, {{/parameters}}): Promise<{{{response}}}> {
-        {{#defaults}}
-        if ({{{in}}}['{{{name}}}'] === undefined) {
-            {{{in}}}['{{{name}}}'] = this.getDefaultValue('{{{name}}}');
+    {{{name}}}({{#parameters}}{{{name}}}{{^required}}?{{/required}}: {{&type}}, {{/parameters}}): Promise<{{{response}}}> {
+        const url = "{{{url}}}";
+        {{#defaults.length}}
+        if (this.http.getDefaultValue) {
+            {{#defaults}}
+            {{{key}}} = Object.assign({
+                {{#value}}
+                {{{.}}}: this.http.getDefaultValue('{{{.}}}', '{{{key}}}', url),
+                {{/value}}
+            }, {{{key}}})
+            {{/defaults}}
         }
-        {{/defaults}}
-        return this.http.request({ url: "{{&url}}", method: "{{&method}}", {{#parameters}}{{{name}}}, {{/parameters}}});
+        {{/defaults.length}}
+        return this.http.request({ url, method: "{{&method}}", {{#parameters}}{{{name}}}, {{/parameters}}});
     }
-
 {{/methods}}
 }

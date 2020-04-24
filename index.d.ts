@@ -92,6 +92,8 @@ declare module "swagger-code-generate/src/property" {
         otherType: boolean;
         constructor(data: ISwaggerDefinitionProperty & {
             name: string;
+            default?: any;
+            required?: any;
         }, config: IConfig);
     }
 }
@@ -123,6 +125,8 @@ declare module "swagger-code-generate/src/param" {
         in: 'body' | 'query' | 'header';
         properties: Property[];
         typeName: string;
+        referenced: boolean;
+        required?: boolean;
         constructor(data: {
             name: string;
             type: string;
@@ -148,17 +152,15 @@ declare module "swagger-code-generate/src/method" {
         name: string;
         parameters: Param[];
         defaults?: {
-            name: string;
-            in: string;
+            key: string;
+            value: string[];
         }[];
         response: string;
         constructor(data: ISwaggerPath & {
             path: string;
             method: string;
         }, config: IConfig, swagger: ISwagger);
-        setDefault(param: Param, properties: {
-            name: string;
-        }[], defaults: string[]): void;
+        setDefault(param: Param, defaults: string[]): void;
         static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[];
     }
 }
@@ -180,6 +182,10 @@ declare module "swagger-code-generate/src/generator" {
 }
 declare module "swagger-code-generate/src/http" {
     export interface IHttp {
+        /**
+         * Make a HTTP request operation.
+         * @param options The parameters required by the request.
+         */
         request(options: {
             url: string;
             method: string;
@@ -187,6 +193,13 @@ declare module "swagger-code-generate/src/http" {
             body?: Record<string, any>;
             header?: Record<string, any>;
         }): Promise<any>;
+        /**
+         * Get the default value
+         * @param name The param name
+         * @param from The param source 'query','body','header'.
+         * @param url The api url string.
+         */
+        getDefaultValue?(name: string, from: string, url: string): any;
     }
 }
 declare module "swagger-code-generate" {
