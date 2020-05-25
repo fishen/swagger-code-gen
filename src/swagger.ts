@@ -1,4 +1,6 @@
 
+export type ParamType = 'path' | 'header' | 'body' | 'query';
+
 export interface ISwaggerInfo {
     version: string;
     title: string;
@@ -21,7 +23,7 @@ export interface ISwaggerDefinition {
 export interface ISwaggerPathParameter {
     default: any;
     description: string;
-    in: 'header' | 'body' | 'query';
+    in: ParamType;
     name: string;
     required: boolean;
     type: string;
@@ -48,6 +50,7 @@ export interface ISwagger {
     basePath: string;
     definitions: Record<string, ISwaggerDefinition>;
     host: string;
+    schemes: string[];
     info: ISwaggerInfo;
     paths: Record<string, Record<string, ISwaggerPath>>
     swagger: string;

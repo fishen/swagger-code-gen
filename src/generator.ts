@@ -21,8 +21,9 @@ export class Generator {
         return fs.ensureFile(destination).then(() => fs.writeFile(destination, content));
     }
 
-    static getType(a: { type?: string, $ref?: string, items?: object, schema?: object }, config: IConfig): string {
-        const { type, $ref, items, schema } = a;
+    static getType(item: { type?: string, $ref?: string, items?: object, schema?: object }, config: IConfig): string {
+        if (!item) return 'void';
+        const { type, $ref, items, schema } = item;
         if (schema) {
             return Generator.getType(schema, config);
         } else if (type in config.typeMappings) {
@@ -47,7 +48,7 @@ export class Generator {
         return type;
     }
     generate() {
-        const { source, templates, filename } = this.config;
+        const { source, templates, rename } = this.config;
         if (!source) throw new Error("The option 'source' is required");
         return fetch(source)
             .then(res => res.json())
@@ -74,6 +75,6 @@ export class Generator {
                     config: this.config
                 }
             })
-            .then(view => Generator.render(view, templates.type, filename({ name: this.config.name }), this.config))
+            .then(view => Generator.render(view, templates.type, rename.file({ name: this.config.name }), this.config))
     }
 }

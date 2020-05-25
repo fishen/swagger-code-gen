@@ -21,16 +21,26 @@ export class Method {
         this.method = data.method;
         this.path = data.path;
         this.url = `${swagger.basePath}/${data.path}`.replace(/\/+/g, '/');
+        if (config.host !== false) {
+            let { host, scheme } = config;
+            host = _.isString(host) ? host : swagger.host;
+            scheme = _.isString(scheme) ? scheme : (swagger.schemes && swagger.schemes[0]) || 'https';
+            this.url = host && scheme ? `${scheme}://${host}${this.url}` : this.url;
+        }
         this.deprecated = data.deprecated;
         this.operationId = data.operationId;
         this.summary = data.summary;
         this.tags = data.tags;
-        this.response = `$Required<${Generator.getType(data.responses[200].schema, config)}>`;
-        if (_.isFunction(config.rename.responseType)) {
-            this.response = config.rename.responseType({ type: this.response });
+        const resSchema = data.responses[200] && data.responses[200].schema;
+        this.response = Generator.getType(resSchema, config);
+        if (_.isFunction(config.rename.response)) {
+            this.response = config.rename.response({ type: this.response });
         }
         this.name = config.rename.method(this);
         this.parameters = Param.from(this, data.parameters, config);
+        this.parameters.filter(p => p.in === 'path')
+            .map(p => new RegExp(`\{(${p.name})\}`, 'g'))
+            .forEach(reg => this.url = this.url.replace(reg, "${$1}"));
     }
     setDefault(param: Param, defaults: string[]) {
         if (!Array.isArray(param.properties)) return;

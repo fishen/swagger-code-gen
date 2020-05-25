@@ -16,7 +16,7 @@ module.exports = {
         rules: [{ test: /\.ts(x?)$/, loader: "ts-loader" }]
     },
     plugins: [
-        new CopyPlugin([{ from: './src/templates', to: './templates' }]),
+        new CopyPlugin({ patterns: [{ from: './src/templates', to: './templates' }] }),
         new BundleDTSPlugin()
     ],
     resolve: {

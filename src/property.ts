@@ -8,6 +8,7 @@ export class Property {
     type: string;
     description: string;
     default: any;
+    example: string;
     deprecated: boolean;
     required: boolean;
     generic: boolean;
@@ -17,6 +18,7 @@ export class Property {
         this.type = Generator.getType(data, config);
         this.description = data.description;
         this.default = data.default;
+        this.example = data.example;
         // this.deprecated = data.deprecated;
         this.required = data.required;
         this.generic = false;
