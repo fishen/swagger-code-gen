@@ -242,13 +242,21 @@ const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
 const generator_1 = __webpack_require__(2);
 const fs_extra_1 = tslib_1.__importDefault(__webpack_require__(4));
 const config_1 = __webpack_require__(12);
+function merge(obj, ...args) {
+    function customizer(objValue, srcValue) {
+        if (lodash_1.default.isArray(objValue)) {
+            return objValue.concat(srcValue);
+        }
+    }
+    return lodash_1.default.mergeWith(obj, ...args, customizer);
+}
 function generate(config) {
     const configurations = Object.keys(config)
         .filter(name => name !== 'common')
-        .map(name => lodash_1.default.merge({}, config_1.defaultConfig, config.common, config[name], { name }));
+        .map(name => merge({}, config_1.defaultConfig, config.common, config[name], { name }));
     const promises = configurations.map(cfg => new generator_1.Generator(cfg).generate());
     return Promise.all(promises).then(() => {
-        const cfg = lodash_1.default.merge(config_1.defaultConfig, config.common);
+        const cfg = merge(config_1.defaultConfig, config.common);
         const apis = configurations.map(cfg => ({
             module: path_1.default.basename(cfg.rename.file(cfg), '.ts'),
             classname: cfg.rename.class(cfg),
@@ -454,6 +462,7 @@ exports.defaultConfig = {
         inject: 'inject',
         http: "'http'",
     },
+    imports: ["import type { IHttp, $Required } from './type';"],
     rename: {
         method: ({ path, method }) => lodash_1.default.camelCase([method, ...path.split('/')].join('_')),
         parameter: ({ method, type }) => lodash_1.default.upperFirst(method) + lodash_1.default.upperFirst(type),

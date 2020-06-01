@@ -72,6 +72,7 @@ export const defaultConfig: IConfig = {
         inject: 'inject',
         http: "'http'",
     },
+    imports: ["import type { IHttp, $Required } from './type';"],
     rename: {
         method: ({ path, method }) => _.camelCase([method, ...path.split('/')].join('_')),
         parameter: ({ method, type }) => _.upperFirst(method) + _.upperFirst(type),
