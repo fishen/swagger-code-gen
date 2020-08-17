@@ -43,7 +43,12 @@ export class Generator {
             } else {
                 genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config));
             }
-            return `${Generator.getType({ type: genericType }, config)}<${genericArgTypes.join(', ')}>`;
+            const genericTypes = genericType.split(',')
+                .map(t => t.trim())
+                .filter(x => x)
+                .map(type => Generator.getType({ type }, config))
+                .join(', ');
+            return `${genericTypes}<${genericArgTypes.join(', ')}>`;
         }
         return type;
     }

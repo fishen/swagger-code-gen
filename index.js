@@ -81,36 +81,32 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = require("tslib");
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
 module.exports = require("lodash");
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Generator = void 0;
-const tslib_1 = __webpack_require__(0);
-const fs_extra_1 = tslib_1.__importDefault(__webpack_require__(4));
-const mustache_1 = tslib_1.__importDefault(__webpack_require__(7));
-const node_fetch_1 = tslib_1.__importDefault(__webpack_require__(8));
-const path_1 = tslib_1.__importDefault(__webpack_require__(3));
-const definition_1 = __webpack_require__(9);
-const method_1 = __webpack_require__(10);
+const fs_extra_1 = __importDefault(__webpack_require__(3));
+const mustache_1 = __importDefault(__webpack_require__(6));
+const node_fetch_1 = __importDefault(__webpack_require__(7));
+const path_1 = __importDefault(__webpack_require__(2));
+const definition_1 = __webpack_require__(8);
+const method_1 = __webpack_require__(9);
 class Generator {
     constructor(config) {
         this.genericTypes = new Map();
@@ -150,7 +146,12 @@ class Generator {
             else {
                 genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config));
             }
-            return `${Generator.getType({ type: genericType }, config)}<${genericArgTypes.join(', ')}>`;
+            const genericTypes = genericType.split(',')
+                .map(t => t.trim())
+                .filter(x => x)
+                .map(type => Generator.getType({ type }, config))
+                .join(', ');
+            return `${genericTypes}<${genericArgTypes.join(', ')}>`;
         }
         return type;
     }
@@ -192,26 +193,26 @@ exports.Generator = Generator;
 
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs-extra");
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Property = void 0;
-const generator_1 = __webpack_require__(2);
+const generator_1 = __webpack_require__(1);
 class Property {
     constructor(data, config) {
         this.name = data.name;
@@ -229,19 +230,21 @@ exports.Property = Property;
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generate = void 0;
-const tslib_1 = __webpack_require__(0);
-const path_1 = tslib_1.__importDefault(__webpack_require__(3));
-const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
-const generator_1 = __webpack_require__(2);
-const fs_extra_1 = tslib_1.__importDefault(__webpack_require__(4));
-const config_1 = __webpack_require__(12);
+const path_1 = __importDefault(__webpack_require__(2));
+const lodash_1 = __importDefault(__webpack_require__(0));
+const generator_1 = __webpack_require__(1);
+const fs_extra_1 = __importDefault(__webpack_require__(3));
+const config_1 = __webpack_require__(11);
 function merge(obj, ...args) {
     function customizer(objValue, srcValue) {
         if (lodash_1.default.isArray(objValue)) {
@@ -269,29 +272,31 @@ exports.generate = generate;
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = require("mustache");
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("node-fetch");
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Definition = void 0;
-const tslib_1 = __webpack_require__(0);
-const property_1 = __webpack_require__(5);
-const generator_1 = __webpack_require__(2);
-const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
+const property_1 = __webpack_require__(4);
+const generator_1 = __webpack_require__(1);
+const lodash_1 = __importDefault(__webpack_require__(0));
 class Definition {
     constructor(data, config) {
         this.title = data.title;
@@ -314,17 +319,19 @@ exports.Definition = Definition;
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Method = void 0;
-const tslib_1 = __webpack_require__(0);
-const param_1 = __webpack_require__(11);
-const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
-const generator_1 = __webpack_require__(2);
+const param_1 = __webpack_require__(10);
+const lodash_1 = __importDefault(__webpack_require__(0));
+const generator_1 = __webpack_require__(1);
 class Method {
     constructor(data, config, swagger) {
         this.method = data.method;
@@ -391,17 +398,19 @@ exports.Method = Method;
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Param = void 0;
-const tslib_1 = __webpack_require__(0);
-const property_1 = __webpack_require__(5);
-const generator_1 = __webpack_require__(2);
-const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
+const property_1 = __webpack_require__(4);
+const generator_1 = __webpack_require__(1);
+const lodash_1 = __importDefault(__webpack_require__(0));
 class Param {
     constructor(data) {
         Object.assign(this, data);
@@ -444,16 +453,18 @@ exports.Param = Param;
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultConfig = void 0;
-const tslib_1 = __webpack_require__(0);
-const path_1 = tslib_1.__importDefault(__webpack_require__(3));
-const lodash_1 = tslib_1.__importDefault(__webpack_require__(1));
+const path_1 = __importDefault(__webpack_require__(2));
+const lodash_1 = __importDefault(__webpack_require__(0));
 exports.defaultConfig = {
     destination: './apis',
     injection: {
