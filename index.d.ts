@@ -58,6 +58,10 @@ declare module "swagger-code-generate/src/config" {
          */
         systemGenericTypes?: string[];
         /**
+         * The type formatter
+         */
+        typeFormatter?: (t: string) => string;
+        /**
          * Custom type mappings
          */
         typeMappings?: Record<string, string>;

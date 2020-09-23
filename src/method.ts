@@ -72,7 +72,7 @@ export class Method {
                     result.push(m);
                 });
                 return result;
-            }, []);
+            }, [] as Method[]);
         return methods;
 
     }

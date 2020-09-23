@@ -129,7 +129,7 @@ class Generator {
             return config.typeMappings[type];
         }
         else if ($ref) {
-            return Generator.getType({ type: $ref.split('/').pop() }, config);
+            return Generator.getType({ type: $ref.replace('#/definitions/', '') }, config);
         }
         else if (type === 'array') {
             return `${Generator.getType(items, config)}[]`;
@@ -153,7 +153,7 @@ class Generator {
                 .join(', ');
             return `${genericTypes}<${genericArgTypes.join(', ')}>`;
         }
-        return type;
+        return config.typeFormatter(type);
     }
     generate() {
         const { source, templates, rename } = this.config;
@@ -475,7 +475,18 @@ exports.defaultConfig = {
     },
     imports: ["import type { IHttp, $Required } from './type';"],
     rename: {
-        method: ({ path, method }) => lodash_1.default.camelCase([method, ...path.split('/')].join('_')),
+        method({ path, method }) {
+            this.methods = this.methods || Object.create(null);
+            let name = lodash_1.default.camelCase([method, ...path.split('/')].join('_'));
+            let index = 1;
+            const origin = name;
+            while (name in this.methods) {
+                name = origin + index;
+                index++;
+            }
+            this.methods[name] = true;
+            return name;
+        },
         parameter: ({ method, type }) => lodash_1.default.upperFirst(method) + lodash_1.default.upperFirst(type),
         response: ({ type }) => {
             const sysBaseTypes = ['void', 'string', 'number', 'boolean', 'object'];
@@ -490,6 +501,7 @@ exports.defaultConfig = {
         index: path_1.default.join(__dirname, 'templates/index.mustache'),
     },
     systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record'],
+    typeFormatter: ((t) => t),
     typeMappings: {
         "integer": "number",
         "List": "Array",
@@ -498,6 +510,8 @@ exports.defaultConfig = {
         "bigdecimal": "number",
         "long": "number",
         "ref": "number",
+        "Void": "void",
+        "double": 'number',
     },
 };
 

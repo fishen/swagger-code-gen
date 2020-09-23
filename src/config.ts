@@ -59,6 +59,10 @@ export interface IConfig {
      */
     systemGenericTypes?: string[];
     /**
+     * The type formatter
+     */
+    typeFormatter?: (t: string) => string;
+    /**
      * Custom type mappings
      */
     typeMappings?: Record<string, string>;
@@ -74,7 +78,18 @@ export const defaultConfig: IConfig = {
     },
     imports: ["import type { IHttp, $Required } from './type';"],
     rename: {
-        method: ({ path, method }) => _.camelCase([method, ...path.split('/')].join('_')),
+        method({ path, method }) {
+            this.methods = this.methods || Object.create(null);
+            let name = _.camelCase([method, ...path.split('/')].join('_'));
+            let index = 1;
+            const origin = name;
+            while (name in this.methods) {
+                name = origin + index;
+                index++;
+            }
+            this.methods[name] = true;
+            return name;
+        },
         parameter: ({ method, type }) => _.upperFirst(method) + _.upperFirst(type),
         response: ({ type }) => {
             const sysBaseTypes = ['void', 'string', 'number', 'boolean', 'object'];
@@ -89,6 +104,7 @@ export const defaultConfig: IConfig = {
         index: path.join(__dirname, 'templates/index.mustache'),
     },
     systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record'],
+    typeFormatter: ((t: string) => t),
     typeMappings: {
         "integer": "number",
         "List": "Array",
@@ -97,5 +113,7 @@ export const defaultConfig: IConfig = {
         "bigdecimal": "number",
         "long": "number",
         "ref": "number",
+        "Void": "void",
+        "double": 'number',
     },
 }

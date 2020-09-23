@@ -29,7 +29,7 @@ export class Generator {
         } else if (type in config.typeMappings) {
             return config.typeMappings[type];
         } else if ($ref) {
-            return Generator.getType({ type: $ref.split('/').pop() }, config);
+            return Generator.getType({ type: $ref.replace('#/definitions/', '') }, config);
         } else if (type === 'array') {
             return `${Generator.getType(items, config)}[]`;
         } else if (/«.+»$/.test(type)) {
@@ -50,7 +50,7 @@ export class Generator {
                 .join(', ');
             return `${genericTypes}<${genericArgTypes.join(', ')}>`;
         }
-        return type;
+        return config.typeFormatter(type);
     }
     generate() {
         const { source, templates, rename } = this.config;
