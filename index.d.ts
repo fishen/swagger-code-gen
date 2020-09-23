@@ -236,7 +236,7 @@ declare module "swagger-code-generate/src/http" {
             url: string;
             method: string;
             query?: Record<string, any>;
-            body?: Record<string, any>;
+            body?: any;
             header?: Record<string, any>;
         }): Promise<any>;
         /**
