@@ -12,6 +12,7 @@ export class Property {
     deprecated: boolean;
     required: boolean;
     generic: boolean;
+    isArray: boolean;
     otherType: boolean;
     constructor(data: ISwaggerDefinitionProperty & { name: string, default?: any, required?: any }, config: IConfig) {
         this.name = data.name;
@@ -19,6 +20,7 @@ export class Property {
         this.description = data.description;
         this.default = data.default;
         this.example = data.example;
+        this.isArray = data.type === 'array';
         // this.deprecated = data.deprecated;
         this.required = data.required;
         this.generic = false;

@@ -220,6 +220,7 @@ class Property {
         this.description = data.description;
         this.default = data.default;
         this.example = data.example;
+        this.isArray = data.type === 'array';
         // this.deprecated = data.deprecated;
         this.required = data.required;
         this.generic = false;
@@ -302,7 +303,6 @@ class Definition {
         this.title = data.title;
         this.type = generator_1.Generator.getType({ type: this.title }, config);
         this.generic = /<.+>$/.test(this.type);
-        this.isArray = data.type === 'array';
         this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
         if (data.properties) {
             this.properties = Object.keys(data.properties).map((name) => new property_1.Property({ ...data.properties[name], name }, config));

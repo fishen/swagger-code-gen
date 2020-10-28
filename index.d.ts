@@ -138,6 +138,7 @@ declare module "swagger-code-generate/src/property" {
         deprecated: boolean;
         required: boolean;
         generic: boolean;
+        isArray: boolean;
         otherType: boolean;
         constructor(data: ISwaggerDefinitionProperty & {
             name: string;
@@ -154,7 +155,6 @@ declare module "swagger-code-generate/src/definition" {
         title: string;
         type: string;
         generic: boolean;
-        isArray: boolean;
         name: string;
         basePath: string;
         host: string;
