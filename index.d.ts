@@ -154,6 +154,7 @@ declare module "swagger-code-generate/src/definition" {
         title: string;
         type: string;
         generic: boolean;
+        isArray: boolean;
         name: string;
         basePath: string;
         host: string;

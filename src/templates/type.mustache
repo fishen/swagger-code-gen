@@ -1,9 +1,16 @@
 /* tslint:disable */
 import { {{&config.injection.injectable}}, {{&config.injection.inject}}, {{&config.injection.injector}} } from '{{&config.injection.module}}';
-// @ts-ignore
 {{#config.imports}}
 {{{.}}}
 {{/config.imports}}
+
+export type $Select<T, K> = K extends keyof T ? T[K] : T;
+export type $Optional<T, K extends keyof any> = Omit<T, K> & {
+    [P in Extract<K, keyof T>]?: T[P];
+}
+export type $Required<T> = {
+    [P in keyof T]-?: $Required<T[P]>;
+}
 
 {{#definitions}}
 /**
@@ -23,7 +30,7 @@ interface {{&type}}{{#genericProperties.length}}<{{#genericProperties}}T{{&.}} =
      * @deprecated
      {{/deprecated}}
      **/
-    {{&name}}{{^required}}?{{/required}}: {{#generic}}T{{&name}}{{/generic}}{{^generic}}{{&type}}{{/generic}};
+    {{&name}}{{^required}}?{{/required}}: {{#generic}}T{{&name}}{{#isArray}}[]{{/isArray}}{{/generic}}{{^generic}}{{&type}}{{/generic}};
     {{/properties}}
 }
 {{/definitions}}

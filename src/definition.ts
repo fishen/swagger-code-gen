@@ -8,6 +8,7 @@ export class Definition {
     title: string;
     type: string;
     generic: boolean;
+    isArray: boolean;
     name: string;
     basePath: string;
     host: string;
@@ -17,6 +18,7 @@ export class Definition {
         this.title = data.title;
         this.type = Generator.getType({ type: this.title }, config);
         this.generic = /<.+>$/.test(this.type);
+        this.isArray = data.type === 'array';
         this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
         if (data.properties) {
             this.properties = Object.keys(data.properties).map((name) => new Property({ ...data.properties[name], name }, config))

@@ -76,7 +76,7 @@ export const defaultConfig: IConfig = {
         inject: 'inject',
         http: "'http'",
     },
-    imports: ["import type { IHttp, $Required } from './type';"],
+    imports: ["import type { IHttp } from './type';"],
     rename: {
         method({ path, method }) {
             this.methods = this.methods || Object.create(null);

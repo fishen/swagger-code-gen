@@ -302,6 +302,7 @@ class Definition {
         this.title = data.title;
         this.type = generator_1.Generator.getType({ type: this.title }, config);
         this.generic = /<.+>$/.test(this.type);
+        this.isArray = data.type === 'array';
         this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
         if (data.properties) {
             this.properties = Object.keys(data.properties).map((name) => new property_1.Property({ ...data.properties[name], name }, config));
@@ -473,7 +474,7 @@ exports.defaultConfig = {
         inject: 'inject',
         http: "'http'",
     },
-    imports: ["import type { IHttp, $Required } from './type';"],
+    imports: ["import type { IHttp } from './type';"],
     rename: {
         method({ path, method }) {
             this.methods = this.methods || Object.create(null);

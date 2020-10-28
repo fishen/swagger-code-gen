@@ -1,10 +1,3 @@
-export type $Select<T, K> = K extends keyof T ? T[K] : T;
-export type $Optional<T, K extends keyof any> = Omit<T, K> & {
-    [P in Extract<K, keyof T>]?: T[P];
-}
-export type $Required<T> = {
-    [P in keyof T]-?: $Required<T[P]>;
-}
 export interface IHttp {
     /**
      * Make a HTTP request operation.
