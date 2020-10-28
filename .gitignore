@@ -3,5 +3,5 @@ node_modules/
 dts/
 src/apis/
 /templates/
-*/apis
+*apis
 /test

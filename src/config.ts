@@ -72,8 +72,8 @@ export const defaultConfig: IConfig = {
     destination: './apis',
     injection: {
         module: 'mp-inject',
-        injectable: 'injectable',
-        inject: 'inject',
+        injectable: 'Injectable',
+        inject: 'Inject',
         http: "'http'",
     },
     imports: ["import type { IHttp } from './type';"],

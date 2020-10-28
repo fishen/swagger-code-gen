@@ -36,11 +36,11 @@ generate({
  * @version 2.4.14
  * @see http:///apiswagger-ui.html
  */
-@injectable()
+@Injectable()
 export default class {
 
     constructor(
-        @inject('http') private http: IHttp
+        @Inject('http') private http: IHttp
     ) { }
 
     /**
@@ -118,8 +118,8 @@ export default class {
 ```ts
 {
     common:{},
-    api1-name:{},
-    api2-name:{}
+    api1Name:{},
+    api2Name:{}
 }
 ```
 ```ts
@@ -128,8 +128,8 @@ export interface IConfig {
      * Dependency injection configuration
      * @default {
      *   module: 'mp-inject',
-     *   injectable: 'injectable',
-     *   inject: 'inject',
+     *   injectable: 'Injectable',
+     *   inject: 'Inject',
      *   http: "'http'",
      * },
      */
@@ -144,7 +144,7 @@ export interface IConfig {
      */
     decorators?: string[];
     /**
-     * The default param keys which wiil be get by http.getDefaultValue.
+     * The default param keys which will be get by http.getDefaultValue.
      */
     defaults?: string[];
     /**
