@@ -187,5 +187,9 @@ export interface IConfig {
      * @example {'integer':'number'}
      */
     typeMappings?: Record<string, string>;
+    /**
+     * Whether to enable the secure property name, the property name will wrapped with double quotes if enabled.
+     */
+    securePropertyName?: boolean;
 }
 ```

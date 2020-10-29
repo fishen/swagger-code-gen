@@ -65,6 +65,10 @@ declare module "swagger-code-generate/src/config" {
          * Custom type mappings
          */
         typeMappings?: Record<string, string>;
+        /**
+         * Whether to enable the secure property name, the property name will wrapped with double quotes if enabled.
+         */
+        securePropertyName?: boolean;
     }
     export const defaultConfig: IConfig;
 }

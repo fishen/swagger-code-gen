@@ -1,6 +1,6 @@
 {
   "name": "swagger-code-generate",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A swagger code generator for typescript",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.2",
-    "@types/lodash": "^4.14.162",
+    "@types/lodash": "^4.14.163",
     "@types/mustache": "^4.0.1",
     "@types/node-fetch": "^2.5.7",
     "bundle-dts": "^1.1.4",
