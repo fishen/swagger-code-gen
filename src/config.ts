@@ -100,5 +100,6 @@ export const defaultConfig: IConfig = {
         "ref": "number",
         "Void": "void",
         "double": 'number',
+        "byte": "number",
     },
 }

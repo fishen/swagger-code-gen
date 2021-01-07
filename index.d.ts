@@ -151,6 +151,7 @@ declare module "swagger-code-generate/src/definition" {
         basePath: string;
         host: string;
         properties?: Property[];
+        genericType: string;
         genericProperties?: string[];
         constructor(data: ISwaggerDefinition, config: IConfig);
         static parse(swagger: ISwagger, config: IConfig): Definition[];

@@ -142,6 +142,9 @@ class Generator {
             if (/«.+»$/.test(genericArgType)) {
                 genericArgTypes = [Generator.getType({ type: genericArgType }, config)];
             }
+            else if (['Array', 'List'].includes(genericType)) {
+                genericArgTypes = [Generator.getType({ type: genericArgType }, config)];
+            }
             else {
                 genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config));
             }
@@ -151,6 +154,10 @@ class Generator {
                 .map(type => Generator.getType({ type }, config))
                 .join(', ');
             return `${genericTypes}<${genericArgTypes.join(', ')}>`;
+        }
+        else if (type.endsWith('[]')) {
+            const arrType = type.substr(0, type.indexOf('[]')).trim();
+            return `${Generator.getType({ type: arrType }, config)}[]`;
         }
         return config.typeFormatter(type);
     }
@@ -173,7 +180,10 @@ class Generator {
                     def.properties.filter(d => properties.includes(d.name)).forEach(p => p.generic = true);
                 }
                 else {
-                    const genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
+                    let genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
+                    if (!genericProperties.length) {
+                        genericProperties = d.properties.filter(p => p.type === d.genericType).map(p => p.name).slice(0, 1);
+                    }
                     d.properties.filter(d => genericProperties.includes(d.name)).forEach(p => p.generic = true);
                     definitions.push({ ...d, genericProperties, title: d.name, type: d.name, generic: false });
                 }
@@ -297,6 +307,9 @@ class Definition {
         this.title = data.title;
         this.type = generator_1.Generator.getType({ type: this.title }, config);
         this.generic = /<.+>$/.test(this.type);
+        if (this.generic) {
+            this.genericType = this.type.substring(this.type.indexOf('<') + 1, this.type.length - 1);
+        }
         this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
         if (data.properties) {
             this.properties = Object.keys(data.properties).map((name) => new property_1.Property({ ...data.properties[name], name }, config));
@@ -355,6 +368,7 @@ class Method {
     }
     static parse(swagger, definitions, config) {
         const methods = Object.keys(swagger.paths)
+            .filter(key => !config.ignores || !config.ignores.path || !(config.ignores.path.includes(key)))
             .reduce((result, path) => {
             const value = swagger.paths[path];
             Object.keys(value).map(method => {
@@ -487,6 +501,7 @@ exports.defaultConfig = {
         "ref": "number",
         "Void": "void",
         "double": 'number',
+        "byte": "number",
     },
 };
 

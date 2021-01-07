@@ -43,6 +43,7 @@ export class Method {
     }
     static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[] {
         const methods = Object.keys(swagger.paths)
+            .filter(key => !config.ignores || !config.ignores.path || !(config.ignores.path.includes(key)))
             .reduce((result, path) => {
                 const value = swagger.paths[path];
                 Object.keys(value).map(method => {
@@ -62,6 +63,5 @@ export class Method {
                 return result;
             }, [] as Method[]);
         return methods;
-
     }
 }

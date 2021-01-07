@@ -39,6 +39,8 @@ export class Generator {
             let genericArgTypes = [];
             if (/«.+»$/.test(genericArgType)) {
                 genericArgTypes = [Generator.getType({ type: genericArgType }, config)];
+            } else if (['Array', 'List'].includes(genericType)) {
+                genericArgTypes = [Generator.getType({ type: genericArgType }, config)];
             } else {
                 genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config));
             }
@@ -48,6 +50,9 @@ export class Generator {
                 .map(type => Generator.getType({ type }, config))
                 .join(', ');
             return `${genericTypes}<${genericArgTypes.join(', ')}>`;
+        } else if (type.endsWith('[]')) {
+            const arrType = type.substr(0, type.indexOf('[]')).trim();
+            return `${Generator.getType({ type: arrType }, config)}[]`;
         }
         return config.typeFormatter(type);
     }
@@ -67,7 +72,10 @@ export class Generator {
                             def.genericProperties = properties;
                             def.properties.filter(d => properties.includes(d.name)).forEach(p => p.generic = true);
                         } else {
-                            const genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
+                            let genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
+                            if (!genericProperties.length) {
+                                genericProperties = d.properties.filter(p => p.type === d.genericType).map(p => p.name).slice(0, 1);
+                            }
                             d.properties.filter(d => genericProperties.includes(d.name)).forEach(p => p.generic = true);
                             definitions.push({ ...d, genericProperties, title: d.name, type: d.name, generic: false })
                         }
