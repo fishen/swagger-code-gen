@@ -5,10 +5,6 @@ import { Generator } from './generator';
 import _ from 'lodash';
 import { ISwaggerPathParameter, ParamType } from './swagger';
 
-type Required<T> = {
-    [P in keyof T]-?: Required<T[P]>;
-};
-
 export class Param {
     name: string;
     type: string;

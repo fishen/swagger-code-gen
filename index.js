@@ -474,11 +474,12 @@ exports.defaultConfig = {
         type: path_1.default.join(__dirname, 'templates/type.mustache'),
         index: path_1.default.join(__dirname, 'templates/index.mustache'),
     },
-    systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record', 'KeyValue'],
+    systemGenericTypes: ['Map', 'WeakMap', 'WeakSet', 'Array', 'Record', 'KeyValue'],
     typeFormatter: ((t) => t),
     typeMappings: {
         "integer": "number",
         "List": "Array",
+        'Set': "Array",
         "int": "number",
         "Map": "Record",
         "bigdecimal": "number",

@@ -87,11 +87,12 @@ export const defaultConfig: IConfig = {
         type: path.join(__dirname, 'templates/type.mustache'),
         index: path.join(__dirname, 'templates/index.mustache'),
     },
-    systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record', 'KeyValue'],
+    systemGenericTypes: ['Map', 'WeakMap', 'WeakSet', 'Array', 'Record', 'KeyValue'],
     typeFormatter: ((t: string) => t),
     typeMappings: {
         "integer": "number",
         "List": "Array",
+        'Set': "Array",
         "int": "number",
         "Map": "Record",
         "bigdecimal": "number",

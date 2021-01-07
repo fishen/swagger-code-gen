@@ -2,7 +2,6 @@
 {{{.}}}
 {{/config.imports}}
 import config from './config';
-const { request } = config;
 
 export type $Select<T, K> = K extends keyof T ? T[K] : T;
 export type $Optional<T, K extends keyof any> = Omit<T, K> & {
@@ -83,7 +82,7 @@ interface {{&typeName}} {
  */
 export function {{{name}}}({{#parameters}}{{{name}}}{{^required}}?{{/required}}: {{&type}}, {{/parameters}}): Promise<{{{response}}}> {
     const url = `{{{url}}}`;
-    return request({ url, method: '{{&method}}', {{#parameters}}{{#passable}}{{{name}}}, {{/passable}}{{/parameters}}});
+    return config.request({ url, method: '{{&method}}', {{#parameters}}{{#passable}}{{{name}}}, {{/passable}}{{/parameters}}});
 }
 {{/methods}}
 //#endregion
