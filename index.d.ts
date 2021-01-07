@@ -2,26 +2,14 @@
 declare module "swagger-code-generate/src/config" {
     export interface IConfig {
         /**
-         * Dependency injection configuration
-         */
-        injection?: Record<string, string>;
-        /**
          * Code generation directory
          * @default ./apis
          */
         destination?: string;
         /**
-         * The service's class decorators
-         */
-        decorators?: string[];
-        /**
-         * The default param keys which wiil be get by http.getDefaultValue.
-         */
-        defaults?: string[];
-        /**
          * Naming convention
          */
-        rename?: Partial<Record<'method' | 'parameter' | 'response' | 'class' | 'file', (...args: any) => string>>;
+        rename?: Partial<Record<'method' | 'parameter' | 'response' | 'file', (...args: any) => string>>;
         /**
          * Code template files
          */
@@ -202,16 +190,11 @@ declare module "swagger-code-generate/src/method" {
         tags?: string[];
         name: string;
         parameters: Param[];
-        defaults?: {
-            key: string;
-            value: string[];
-        }[];
         response: string;
         constructor(data: ISwaggerPath & {
             path: string;
             method: string;
         }, config: IConfig, swagger: ISwagger);
-        setDefault(param: Param, defaults: string[]): void;
         static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[];
     }
 }
@@ -231,31 +214,8 @@ declare module "swagger-code-generate/src/generator" {
         generate(): Promise<any>;
     }
 }
-declare module "swagger-code-generate/src/http" {
-    export interface IHttp {
-        /**
-         * Make a HTTP request operation.
-         * @param options The parameters required by the request.
-         */
-        request(options: {
-            url: string;
-            method: string;
-            query?: Record<string, any>;
-            body?: any;
-            header?: Record<string, any>;
-        }): Promise<any>;
-        /**
-         * Get the default value
-         * @param name The param name
-         * @param from The param source 'path','query','body','header'.
-         * @param url The api url string.
-         */
-        getDefaultValue?(name: string, from: string, url: string): any;
-    }
-}
 declare module "swagger-code-generate" {
-    import { IHttp } from 'swagger-code-generate/src/http';
     import { IConfig } from 'swagger-code-generate/src/config';
-    export function generate(config: Record<string, IConfig>): Promise<any>;
-    export type { IConfig, IHttp };
+    export function generate(config: Record<string, IConfig>): Promise<void>;
+    export type { IConfig };
 }

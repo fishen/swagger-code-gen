@@ -1,8 +1,8 @@
-/* tslint:disable */
-import { {{&config.injection.injectable}}, {{&config.injection.inject}}, {{&config.injection.injector}} } from '{{&config.injection.module}}';
 {{#config.imports}}
 {{{.}}}
 {{/config.imports}}
+import config from './config';
+const { request } = config;
 
 export type $Select<T, K> = K extends keyof T ? T[K] : T;
 export type $Optional<T, K extends keyof any> = Omit<T, K> & {
@@ -11,6 +11,12 @@ export type $Optional<T, K extends keyof any> = Omit<T, K> & {
 export type $Required<T> = {
     [P in keyof T]-?: $Required<T[P]>;
 }
+export type KeyValue<K, V> = {
+    key: K;
+    value: V;
+}
+
+//#region Definitions
 
 {{#definitions}}
 /**
@@ -30,10 +36,10 @@ interface {{&type}}{{#genericProperties.length}}<{{#genericProperties}}T{{&.}} =
      * @deprecated
      {{/deprecated}}
      **/
-    {{#config.securePropertyName}}"{{/config.securePropertyName}}{{&name}}{{#config.securePropertyName}}"{{/config.securePropertyName}}{{^required}}?{{/required}}: {{#generic}}T{{&name}}{{#isArray}}[]{{/isArray}}{{/generic}}{{^generic}}{{&type}}{{/generic}};
+    {{#config.securePropertyName}}'{{/config.securePropertyName}}{{&name}}{{#config.securePropertyName}}'{{/config.securePropertyName}}{{^required}}?{{/required}}: {{#generic}}T{{&name}}{{#isArray}}[]{{/isArray}}{{/generic}}{{^generic}}{{&type}}{{/generic}};
     {{/properties}}
 }
-{{/definitions}}
+{{/definitions}} 
 
 {{#methods}}
 {{#parameters}}
@@ -50,53 +56,34 @@ interface {{&typeName}} {
      * @deprecated
      {{/deprecated}}
      **/
-    {{#config.securePropertyName}}"{{/config.securePropertyName}}{{&name}}{{#config.securePropertyName}}"{{/config.securePropertyName}}{{^required}}?{{/required}}: {{&type}};
+    {{#config.securePropertyName}}'{{/config.securePropertyName}}{{&name}}{{#config.securePropertyName}}'{{/config.securePropertyName}}{{^required}}?{{/required}}: {{&type}};
     {{/properties}}
 }
 {{/properties.length}}
 {{/referenced}}
 {{/parameters}}
 {{/methods}}
+//#endregion
 
-/**
- * {{{info.title}}}
- * @version {{{info.version}}}
- * @see http://{{&host}}{{&basePath}}swagger-ui.html
- */
-{{#config.decorators}}
-{{{.}}}
-{{/config.decorators}}
-@{{&config.injection.injectable}}()
-export default class {
+//#region Functions
 
-    constructor(
-        @{{&config.injection.inject}}({{&config.injection.http}}) private http: IHttp
-    ) { }
+// {{{info.title}}}
+// {{{info.version}}}
+// http://{{&host}}{{&basePath}}swagger-ui.html
 {{#methods}}
 
-    /**
-     * {{{summary}}}
-     {{#parameters}}
-     * @param {{{name}}} {{{description}}}
-     {{/parameters}}
-     {{#deprecated}}
-     * @deprecated
-     {{/deprecated}}
-     */
-    {{{name}}}({{#parameters}}{{{name}}}{{^required}}?{{/required}}: {{&type}}, {{/parameters}}): Promise<{{{response}}}> {
-        const url = `{{{url}}}`;
-        {{#defaults.length}}
-        if (this.http.getDefaultValue) {
-            {{#defaults}}
-            {{{key}}} = Object.assign({
-                {{#value}}
-                {{{.}}}: this.http.getDefaultValue('{{{.}}}', '{{{key}}}', url),
-                {{/value}}
-            }, {{{key}}})
-            {{/defaults}}
-        }
-        {{/defaults.length}}
-        return this.http.request({ url, method: "{{&method}}", {{#parameters}}{{#passable}}{{{name}}}, {{/passable}}{{/parameters}}});
-    }
-{{/methods}}
+/**
+ * {{{summary}}}
+{{#parameters}}
+ * @param {{{name}}} {{{description}}}
+{{/parameters}}
+{{#deprecated}}
+ * @deprecated
+{{/deprecated}}
+ */
+export function {{{name}}}({{#parameters}}{{{name}}}{{^required}}?{{/required}}: {{&type}}, {{/parameters}}): Promise<{{{response}}}> {
+    const url = `{{{url}}}`;
+    return request({ url, method: '{{&method}}', {{#parameters}}{{#passable}}{{{name}}}, {{/passable}}{{/parameters}}});
 }
+{{/methods}}
+//#endregion

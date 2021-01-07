@@ -111,7 +111,6 @@ class Generator {
     constructor(config) {
         this.genericTypes = new Map();
         this.config = config;
-        this.config.defaults = Array.isArray(this.config.defaults) ? this.config.defaults : [];
     }
     static render(view, template, filename, config) {
         const content = mustache_1.default.render(fs_extra_1.default.readFileSync(template, 'utf-8'), view);
@@ -261,12 +260,7 @@ function generate(config) {
     const promises = configurations.map(cfg => new generator_1.Generator(cfg).generate());
     return Promise.all(promises).then(() => {
         const cfg = merge(config_1.defaultConfig, config.common);
-        const apis = configurations.map(cfg => ({
-            module: path_1.default.basename(cfg.rename.file(cfg), '.ts'),
-            classname: cfg.rename.class(cfg),
-        }));
-        fs_extra_1.default.copyFileSync(path_1.default.resolve(__dirname, './templates/type.ts'), path_1.default.join(cfg.destination, 'type.ts'));
-        return generator_1.Generator.render({ apis }, cfg.templates.index, 'index.ts', cfg);
+        fs_extra_1.default.copyFileSync(path_1.default.resolve(__dirname, './templates/config.ts'), path_1.default.join(cfg.destination, 'config.ts'));
     }).catch(console.error);
 }
 exports.generate = generate;
@@ -359,16 +353,6 @@ class Method {
             .map(p => new RegExp(`\{(${p.name})\}`, 'g'))
             .forEach(reg => this.url = this.url.replace(reg, "${$1}"));
     }
-    setDefault(param, defaults) {
-        if (!Array.isArray(param.properties))
-            return;
-        const defaultNames = param.properties.filter(p => defaults.includes(p.name)).map(p => p.name);
-        if (!defaultNames.length)
-            return;
-        param.type = `$Optional<${param.type}, ${defaultNames.map(p => `'${p}'`).join(' | ')}>`;
-        this.defaults = this.defaults || [];
-        this.defaults.push({ key: param.in, value: defaultNames });
-    }
     static parse(swagger, definitions, config) {
         const methods = Object.keys(swagger.paths)
             .reduce((result, path) => {
@@ -380,12 +364,9 @@ class Method {
                         const d = definitions.find(d => d.type === param.type);
                         param.properties = d && d.properties;
                     }
-                    m.setDefault(param, config.defaults);
                 });
                 for (let index = m.parameters.length - 1; index >= 0; index--) {
                     const p = m.parameters[index];
-                    const defaults = m.defaults && m.defaults.find(x => x.key === p.in);
-                    p.required = !p.properties || p.properties.some(p => p.required && (!defaults || !defaults.value.includes(p.name)));
                     p.required = p.required ? p.required : !m.parameters.slice(index).every(p => !p.required);
                 }
                 result.push(m);
@@ -468,13 +449,6 @@ const path_1 = __importDefault(__webpack_require__(2));
 const lodash_1 = __importDefault(__webpack_require__(0));
 exports.defaultConfig = {
     destination: './apis',
-    injection: {
-        module: 'mp-inject',
-        injectable: 'Injectable',
-        inject: 'Inject',
-        http: "'http'",
-    },
-    imports: ["import type { IHttp } from './type';"],
     rename: {
         method({ path, method }) {
             this.methods = this.methods || Object.create(null);
@@ -495,13 +469,12 @@ exports.defaultConfig = {
             return isSysType ? type : `$Required<${type}>`;
         },
         file: ({ name }) => `${name}-api.ts`,
-        class: ({ name }) => lodash_1.default.upperFirst(lodash_1.default.camelCase(name)) + 'API',
     },
     templates: {
         type: path_1.default.join(__dirname, 'templates/type.mustache'),
         index: path_1.default.join(__dirname, 'templates/index.mustache'),
     },
-    systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record'],
+    systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record', 'KeyValue'],
     typeFormatter: ((t) => t),
     typeMappings: {
         "integer": "number",

@@ -3,26 +3,14 @@ import _ from 'lodash';
 
 export interface IConfig {
     /**
-     * Dependency injection configuration
-     */
-    injection?: Record<string, string>;
-    /**
      * Code generation directory
      * @default ./apis
      */
     destination?: string;
     /**
-     * The service's class decorators
-     */
-    decorators?: string[];
-    /**
-     * The default param keys which wiil be get by http.getDefaultValue.
-     */
-    defaults?: string[];
-    /**
      * Naming convention
      */
-    rename?: Partial<Record<'method' | 'parameter' | 'response' | 'class' | 'file', (...args: any) => string>>;
+    rename?: Partial<Record<'method' | 'parameter' | 'response' | 'file', (...args: any) => string>>;
     /**
      * Code template files
      */
@@ -74,13 +62,6 @@ export interface IConfig {
 
 export const defaultConfig: IConfig = {
     destination: './apis',
-    injection: {
-        module: 'mp-inject',
-        injectable: 'Injectable',
-        inject: 'Inject',
-        http: "'http'",
-    },
-    imports: ["import type { IHttp } from './type';"],
     rename: {
         method({ path, method }) {
             this.methods = this.methods || Object.create(null);
@@ -101,13 +82,12 @@ export const defaultConfig: IConfig = {
             return isSysType ? type : `$Required<${type}>`;
         },
         file: ({ name }) => `${name}-api.ts`,
-        class: ({ name }) => _.upperFirst(_.camelCase(name)) + 'API',
     },
     templates: {
         type: path.join(__dirname, 'templates/type.mustache'),
         index: path.join(__dirname, 'templates/index.mustache'),
     },
-    systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record'],
+    systemGenericTypes: ['Set', 'Map', 'WeakMap', 'WeakSet', 'Array', 'Record', 'KeyValue'],
     typeFormatter: ((t: string) => t),
     typeMappings: {
         "integer": "number",

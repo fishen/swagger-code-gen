@@ -12,7 +12,6 @@ export class Generator {
     config: IConfig;
     constructor(config: IConfig) {
         this.config = config;
-        this.config.defaults = Array.isArray(this.config.defaults) ? this.config.defaults : [];
     }
 
     static render(view: object, template: string, filename: string, config: IConfig) {

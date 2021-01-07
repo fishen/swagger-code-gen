@@ -10,6 +10,7 @@
     "target": "esnext",
     "allowJs": false,
     "checkJs": false,
+    "baseUrl": "src",
     "downlevelIteration": true,
     "typeRoots": [
       "typings"

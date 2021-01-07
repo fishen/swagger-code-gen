@@ -1,10 +1,10 @@
 {
   "name": "swagger-code-generate",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "A swagger code generator for typescript",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/**/*.{ts,tsx}",
+    "test": "rm apis&&npm run build&&node test/example.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "fix": "tslint -c tslint.json 'src/**/*.ts' --fix",
     "type-check": "tsc --noEmit",
@@ -24,17 +24,17 @@
     "url": "https://github.com/fishen/swagger-code-gen.git"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.2",
-    "@types/lodash": "^4.14.163",
-    "@types/mustache": "^4.0.1",
+    "@types/fs-extra": "^9.0.6",
+    "@types/lodash": "^4.14.167",
+    "@types/mustache": "^4.1.0",
     "@types/node-fetch": "^2.5.7",
     "bundle-dts": "^1.1.4",
-    "copy-webpack-plugin": "^6.2.1",
+    "copy-webpack-plugin": "^6.4.1",
     "mp-inject": "^3.0.0",
-    "ts-loader": "^8.0.7",
-    "ts-node": "^8.10.2",
+    "ts-loader": "^8.0.14",
+    "ts-node": "^9.1.1",
     "tslint": "^6.1.3",
-    "typescript": "^3.9.7",
+    "typescript": "^4.1.3",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "webpack-node-externals": "^2.5.2"
@@ -42,7 +42,7 @@
   "dependencies": {
     "fs-extra": "^9.0.1",
     "lodash": "^4.17.20",
-    "mustache": "^4.0.1",
+    "mustache": "^4.1.0",
     "node-fetch": "^2.6.1"
   }
 }

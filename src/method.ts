@@ -15,7 +15,6 @@ export class Method {
     tags?: string[];
     name: string;
     parameters: Param[];
-    defaults?: { key: string, value: string[] }[];
     response: string;
     constructor(data: ISwaggerPath & { path: string, method: string }, config: IConfig, swagger: ISwagger) {
         this.method = data.method;
@@ -42,14 +41,6 @@ export class Method {
             .map(p => new RegExp(`\{(${p.name})\}`, 'g'))
             .forEach(reg => this.url = this.url.replace(reg, "${$1}"));
     }
-    setDefault(param: Param, defaults: string[]) {
-        if (!Array.isArray(param.properties)) return;
-        const defaultNames = param.properties.filter(p => defaults.includes(p.name)).map(p => p.name);
-        if (!defaultNames.length) return;
-        param.type = `$Optional<${param.type}, ${defaultNames.map(p => `'${p}'`).join(' | ')}>`;
-        this.defaults = this.defaults || [];
-        this.defaults.push({ key: param.in, value: defaultNames });
-    }
     static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[] {
         const methods = Object.keys(swagger.paths)
             .reduce((result, path) => {
@@ -61,12 +52,9 @@ export class Method {
                             const d = definitions.find(d => d.type === param.type);
                             param.properties = d && d.properties;
                         }
-                        m.setDefault(param, config.defaults);
                     })
                     for (let index = m.parameters.length - 1; index >= 0; index--) {
                         const p = m.parameters[index];
-                        const defaults = m.defaults && m.defaults.find(x => x.key === p.in);
-                        p.required = !p.properties || p.properties.some(p => p.required && (!defaults || !defaults.value.includes(p.name)));
                         p.required = p.required ? p.required : !m.parameters.slice(index).every(p => !p.required);
                     }
                     result.push(m);
