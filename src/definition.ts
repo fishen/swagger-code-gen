@@ -16,14 +16,14 @@ export class Definition {
     genericProperties?: string[];
     constructor(data: ISwaggerDefinition, config: IConfig) {
         this.title = data.title;
-        this.type = Generator.getType({ type: this.title }, config);
+        this.type = Generator.getType({ type: this.title }, config, []);
         this.generic = /<.+>$/.test(this.type);
         if (this.generic) {
             this.genericType = this.type.substring(this.type.indexOf('<') + 1, this.type.length - 1);
         }
         this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
         if (data.properties) {
-            this.properties = Object.keys(data.properties).map((name) => new Property({ ...data.properties[name], name }, config))
+            this.properties = Object.keys(data.properties).map((name) => new Property({ ...data.properties[name], name }, config, []))
             this.properties.forEach(p => p.required = _.includes(data.required, p.name));
         }
     }

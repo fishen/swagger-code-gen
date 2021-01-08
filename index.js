@@ -103,6 +103,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Generator = void 0;
 const fs_extra_1 = __importDefault(__webpack_require__(3));
 const mustache_1 = __importDefault(__webpack_require__(6));
+const lodash_1 = __importDefault(__webpack_require__(0));
 const node_fetch_1 = __importDefault(__webpack_require__(7));
 const path_1 = __importDefault(__webpack_require__(2));
 const definition_1 = __webpack_require__(8);
@@ -117,21 +118,21 @@ class Generator {
         const destination = path_1.default.join(config.destination, filename);
         return fs_extra_1.default.ensureFile(destination).then(() => fs_extra_1.default.writeFile(destination, content));
     }
-    static getType(item, config) {
+    static getType(item, config, definitions) {
         if (!item)
             return 'void';
         const { type, $ref, items, schema } = item;
         if (schema) {
-            return Generator.getType(schema, config);
+            return Generator.getType(schema, config, definitions);
         }
         else if (type in config.typeMappings) {
             return config.typeMappings[type];
         }
         else if ($ref) {
-            return Generator.getType({ type: $ref.replace('#/definitions/', '') }, config);
+            return Generator.getType({ type: $ref.replace('#/definitions/', '') }, config, definitions);
         }
         else if (type === 'array') {
-            return `${Generator.getType(items, config)}[]`;
+            return `${Generator.getType(items, config, definitions)}[]`;
         }
         else if (/«.+»$/.test(type)) {
             const start = type.indexOf('«');
@@ -140,24 +141,26 @@ class Generator {
             const genericArgType = type.substring(start + 1, end);
             let genericArgTypes = [];
             if (/«.+»$/.test(genericArgType)) {
-                genericArgTypes = [Generator.getType({ type: genericArgType }, config)];
-            }
-            else if (['Array', 'List'].includes(genericType)) {
-                genericArgTypes = [Generator.getType({ type: genericArgType }, config)];
+                genericArgTypes = [Generator.getType({ type: genericArgType }, config, definitions)];
             }
             else {
-                genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config));
+                if (!definitions.some(d => d.name === config.typeFormatter(genericArgType))) {
+                    genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config, definitions));
+                }
+                else {
+                    genericArgTypes = [config.typeFormatter(genericArgType)];
+                }
             }
             const genericTypes = genericType.split(',')
                 .map(t => t.trim())
                 .filter(x => x)
-                .map(type => Generator.getType({ type }, config))
+                .map(type => Generator.getType({ type }, config, definitions))
                 .join(', ');
             return `${genericTypes}<${genericArgTypes.join(', ')}>`;
         }
         else if (type.endsWith('[]')) {
             const arrType = type.substr(0, type.indexOf('[]')).trim();
-            return `${Generator.getType({ type: arrType }, config)}[]`;
+            return `${Generator.getType({ type: arrType }, config, definitions)}[]`;
         }
         return config.typeFormatter(type);
     }
@@ -175,9 +178,8 @@ class Generator {
                 if (def) {
                     if (def.genericProperties)
                         return;
-                    const properties = d.properties.filter(p => p.otherType).map(p => p.name);
-                    def.genericProperties = properties;
-                    def.properties.filter(d => properties.includes(d.name)).forEach(p => p.generic = true);
+                    def.genericProperties = lodash_1.default.differenceWith(d.properties, def.properties, (x, y) => x.name === y.name && x.type === y.type).map(x => x.name);
+                    def.properties.filter(d => def.genericProperties.includes(d.name)).forEach(p => p.generic = true);
                 }
                 else {
                     let genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
@@ -223,9 +225,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Property = void 0;
 const generator_1 = __webpack_require__(1);
 class Property {
-    constructor(data, config) {
+    constructor(data, config, defs) {
         this.name = data.name;
-        this.type = generator_1.Generator.getType(data, config);
+        this.type = generator_1.Generator.getType(data, config, defs);
         this.description = data.description;
         this.default = data.default;
         this.example = data.example;
@@ -305,14 +307,14 @@ const lodash_1 = __importDefault(__webpack_require__(0));
 class Definition {
     constructor(data, config) {
         this.title = data.title;
-        this.type = generator_1.Generator.getType({ type: this.title }, config);
+        this.type = generator_1.Generator.getType({ type: this.title }, config, []);
         this.generic = /<.+>$/.test(this.type);
         if (this.generic) {
             this.genericType = this.type.substring(this.type.indexOf('<') + 1, this.type.length - 1);
         }
         this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
         if (data.properties) {
-            this.properties = Object.keys(data.properties).map((name) => new property_1.Property({ ...data.properties[name], name }, config));
+            this.properties = Object.keys(data.properties).map((name) => new property_1.Property({ ...data.properties[name], name }, config, []));
             this.properties.forEach(p => p.required = lodash_1.default.includes(data.required, p.name));
         }
     }
@@ -341,7 +343,7 @@ const param_1 = __webpack_require__(10);
 const lodash_1 = __importDefault(__webpack_require__(0));
 const generator_1 = __webpack_require__(1);
 class Method {
-    constructor(data, config, swagger) {
+    constructor(data, config, swagger, definitions) {
         this.method = data.method;
         this.path = data.path;
         this.url = `${swagger.basePath}/${data.path}`.replace(/\/+/g, '/');
@@ -356,12 +358,12 @@ class Method {
         this.summary = data.summary;
         this.tags = data.tags;
         const resSchema = data.responses[200] && data.responses[200].schema;
-        this.response = generator_1.Generator.getType(resSchema, config);
+        this.response = generator_1.Generator.getType(resSchema, config, definitions);
         if (lodash_1.default.isFunction(config.rename.response)) {
             this.response = config.rename.response({ type: this.response });
         }
         this.name = config.rename.method(this);
-        this.parameters = param_1.Param.from(this, data.parameters, config);
+        this.parameters = param_1.Param.from(this, data.parameters, config, definitions);
         this.parameters.filter(p => p.in === 'path')
             .map(p => new RegExp(`\{(${p.name})\}`, 'g'))
             .forEach(reg => this.url = this.url.replace(reg, "${$1}"));
@@ -372,7 +374,7 @@ class Method {
             .reduce((result, path) => {
             const value = swagger.paths[path];
             Object.keys(value).map(method => {
-                const m = new Method({ method, path, ...value[method] }, config, swagger);
+                const m = new Method({ method, path, ...value[method] }, config, swagger, definitions);
                 m.parameters.forEach((param) => {
                     if (param.in === 'body') {
                         const d = definitions.find(d => d.type === param.type);
@@ -415,7 +417,7 @@ class Param {
         this.passable = data.in !== 'path';
         this.description = this.description || `The http request ${data.in} parameters.`;
     }
-    static from(method, params, config) {
+    static from(method, params, config, definitions) {
         const { ignores } = config;
         if (ignores) {
             params = params.filter(x => !(x.in in ignores && ignores[x.in].includes(x.name)));
@@ -425,14 +427,19 @@ class Param {
         const parameters = Object.keys(groupedParams).reduce((r, key) => {
             if (key === 'path') {
                 const paths = groupedParams[key];
-                result = paths.map(p => new Param({ ...p, type: generator_1.Generator.getType(p, config) }));
+                result = paths.map(p => new Param({ ...p, type: generator_1.Generator.getType(p, config, definitions) }));
             }
             else if (key === 'body') {
                 const p = groupedParams[key][0];
-                r[key] = new Param({ name: key, in: key, type: generator_1.Generator.getType(p, config) });
+                r[key] = new Param({ name: key, in: key, type: generator_1.Generator.getType(p, config, definitions) });
             }
             else {
-                const properties = groupedParams[key].map(v => new property_1.Property(v, config));
+                const properties = groupedParams[key].map(v => new property_1.Property(v, config, definitions)).reduce((result, p) => {
+                    if (!result.some(x => p.name === x.name)) {
+                        result.push(p);
+                    }
+                    return result;
+                }, []);
                 const type = config.rename.parameter({ method: method.name, type: key });
                 r[key] = new Param({ name: key, in: key, type, properties });
             }
@@ -502,6 +509,7 @@ exports.defaultConfig = {
         "Void": "void",
         "double": 'number',
         "byte": "number",
+        "LinkedList": "Array"
     },
 };
 

@@ -16,7 +16,7 @@ export class Method {
     name: string;
     parameters: Param[];
     response: string;
-    constructor(data: ISwaggerPath & { path: string, method: string }, config: IConfig, swagger: ISwagger) {
+    constructor(data: ISwaggerPath & { path: string, method: string }, config: IConfig, swagger: ISwagger, definitions: Definition[]) {
         this.method = data.method;
         this.path = data.path;
         this.url = `${swagger.basePath}/${data.path}`.replace(/\/+/g, '/');
@@ -31,12 +31,12 @@ export class Method {
         this.summary = data.summary;
         this.tags = data.tags;
         const resSchema = data.responses[200] && data.responses[200].schema;
-        this.response = Generator.getType(resSchema, config);
+        this.response = Generator.getType(resSchema, config, definitions);
         if (_.isFunction(config.rename.response)) {
             this.response = config.rename.response({ type: this.response });
         }
         this.name = config.rename.method(this);
-        this.parameters = Param.from(this, data.parameters, config);
+        this.parameters = Param.from(this, data.parameters, config, definitions);
         this.parameters.filter(p => p.in === 'path')
             .map(p => new RegExp(`\{(${p.name})\}`, 'g'))
             .forEach(reg => this.url = this.url.replace(reg, "${$1}"));
@@ -47,7 +47,7 @@ export class Method {
             .reduce((result, path) => {
                 const value = swagger.paths[path];
                 Object.keys(value).map(method => {
-                    const m = new Method({ method, path, ...value[method] }, config, swagger);
+                    const m = new Method({ method, path, ...value[method] }, config, swagger, definitions);
                     m.parameters.forEach((param) => {
                         if (param.in === 'body') {
                             const d = definitions.find(d => d.type === param.type);

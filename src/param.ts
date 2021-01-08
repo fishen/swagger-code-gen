@@ -4,6 +4,7 @@ import { IConfig } from './config';
 import { Generator } from './generator';
 import _ from 'lodash';
 import { ISwaggerPathParameter, ParamType } from './swagger';
+import { Definition } from 'definition';
 
 export class Param {
     name: string;
@@ -23,7 +24,7 @@ export class Param {
         this.description = this.description || `The http request ${data.in} parameters.`;
     }
 
-    static from(method: Method, params: ISwaggerPathParameter[], config: IConfig) {
+    static from(method: Method, params: ISwaggerPathParameter[], config: IConfig, definitions: Definition[]) {
         const { ignores } = config;
         if (ignores) {
             params = params.filter(x => !(x.in in ignores && ignores[x.in].includes(x.name)));
@@ -33,12 +34,17 @@ export class Param {
         const parameters = Object.keys(groupedParams).reduce((r: Record<string, Param>, key) => {
             if (key === 'path') {
                 const paths = groupedParams[key];
-                result = paths.map(p => new Param({ ...p, type: Generator.getType(p, config) }));
+                result = paths.map(p => new Param({ ...p, type: Generator.getType(p, config, definitions) }));
             } else if (key === 'body') {
                 const p = groupedParams[key][0];
-                r[key] = new Param({ name: key, in: key, type: Generator.getType(p, config) });
+                r[key] = new Param({ name: key, in: key, type: Generator.getType(p, config, definitions) });
             } else {
-                const properties = groupedParams[key].map(v => new Property(v, config));
+                const properties = groupedParams[key].map(v => new Property(v, config, definitions)).reduce((result, p) => {
+                    if (!result.some(x => p.name === x.name)) {
+                        result.push(p);
+                    }
+                    return result;
+                }, []);
                 const type = config.rename.parameter({ method: method.name, type: key });
                 r[key] = new Param({ name: key, in: key as any, type, properties });
             }

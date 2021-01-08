@@ -121,6 +121,7 @@ declare module "swagger-code-generate/src/swagger" {
 declare module "swagger-code-generate/src/property" {
     import { ISwaggerDefinitionProperty } from 'swagger-code-generate/src/swagger';
     import { IConfig } from 'swagger-code-generate/src/config';
+    import { Definition } from 'definition';
     export class Property {
         name: string;
         type: string;
@@ -136,7 +137,7 @@ declare module "swagger-code-generate/src/property" {
             name: string;
             default?: any;
             required?: any;
-        }, config: IConfig);
+        }, config: IConfig, defs: Definition[]);
     }
 }
 declare module "swagger-code-generate/src/definition" {
@@ -162,6 +163,7 @@ declare module "swagger-code-generate/src/param" {
     import { Method } from 'swagger-code-generate/src/method';
     import { IConfig } from 'swagger-code-generate/src/config';
     import { ISwaggerPathParameter, ParamType } from 'swagger-code-generate/src/swagger';
+    import { Definition } from 'definition';
     export class Param {
         name: string;
         type: string;
@@ -173,7 +175,7 @@ declare module "swagger-code-generate/src/param" {
         description?: string;
         passable: boolean;
         constructor(data: Partial<Param>);
-        static from(method: Method, params: ISwaggerPathParameter[], config: IConfig): Param[];
+        static from(method: Method, params: ISwaggerPathParameter[], config: IConfig, definitions: Definition[]): Param[];
     }
 }
 declare module "swagger-code-generate/src/method" {
@@ -195,12 +197,13 @@ declare module "swagger-code-generate/src/method" {
         constructor(data: ISwaggerPath & {
             path: string;
             method: string;
-        }, config: IConfig, swagger: ISwagger);
+        }, config: IConfig, swagger: ISwagger, definitions: Definition[]);
         static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[];
     }
 }
 declare module "swagger-code-generate/src/generator" {
     import { IConfig } from 'swagger-code-generate/src/config';
+    import { Definition } from 'swagger-code-generate/src/definition';
     export class Generator {
         genericTypes: Map<any, any>;
         config: IConfig;
@@ -211,7 +214,7 @@ declare module "swagger-code-generate/src/generator" {
             $ref?: string;
             items?: object;
             schema?: object;
-        }, config: IConfig): string;
+        }, config: IConfig, definitions: Definition[]): string;
         generate(): Promise<any>;
     }
 }

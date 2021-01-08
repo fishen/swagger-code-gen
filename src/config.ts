@@ -101,5 +101,6 @@ export const defaultConfig: IConfig = {
         "Void": "void",
         "double": 'number',
         "byte": "number",
+        "LinkedList": "Array"
     },
 }

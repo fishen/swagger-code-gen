@@ -21,7 +21,7 @@
     ]
   },
   "include": [
-    "apis/*.ts",
+    "apis/**/*.ts",
     "src/**/*.ts",
     "test/**/*.ts"
   ],
