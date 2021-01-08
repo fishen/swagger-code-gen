@@ -12,4 +12,8 @@ interface IConfig {
     }): Promise<any>
 }
 
-export default {} as IConfig;
+export default {
+    request(options) {
+        return Promise.reject('The [request] option is required');
+    }
+} as IConfig;

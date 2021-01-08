@@ -116,7 +116,11 @@ class Generator {
     static render(view, template, filename, config) {
         const content = mustache_1.default.render(fs_extra_1.default.readFileSync(template, 'utf-8'), view);
         const destination = path_1.default.join(config.destination, filename);
-        return fs_extra_1.default.ensureFile(destination).then(() => fs_extra_1.default.writeFile(destination, content));
+        return fs_extra_1.default.ensureFile(destination).then(() => fs_extra_1.default.writeFile(destination, content)).then(() => ({
+            data: view,
+            filename,
+            config
+        }));
     }
     static getType(item, config, definitions) {
         if (!item)
@@ -194,7 +198,7 @@ class Generator {
                 ...json,
                 methods: method_1.Method.parse({ ...json }, definitions, this.config),
                 definitions: definitions.filter(d => !d.generic),
-                config: this.config
+                config: this.config,
             };
         })
             .then(view => Generator.render(view, templates.type, rename.file({ name: this.config.name }), this.config));
@@ -270,7 +274,14 @@ function generate(config) {
         .filter(name => name !== 'common')
         .map(name => merge({}, config_1.defaultConfig, config.common, config[name], { name }));
     const promises = configurations.map(cfg => new generator_1.Generator(cfg).generate());
-    return Promise.all(promises).then(() => {
+    const log = (name, func) => console.log(`${name}:`, `function:${func}`);
+    return Promise.all(promises).then((items) => {
+        const total = items.reduce((total, item) => {
+            log(item.data.config.name, item.data.methods.length);
+            total.func += item.data.methods.length;
+            return total;
+        }, { func: 0, defs: 0 });
+        log('total', total.func);
         const cfg = merge(config_1.defaultConfig, config.common);
         fs_extra_1.default.copyFileSync(path_1.default.resolve(__dirname, './templates/config.ts'), path_1.default.join(cfg.destination, 'config.ts'));
     }).catch(console.error);

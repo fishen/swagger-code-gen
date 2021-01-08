@@ -14,10 +14,14 @@ export class Generator {
         this.config = config;
     }
 
-    static render(view: object, template: string, filename: string, config: IConfig) {
+    static render(view: any, template: string, filename: string, config: IConfig) {
         const content = mustache.render(fs.readFileSync(template, 'utf-8'), view);
         const destination = path.join(config.destination, filename);
-        return fs.ensureFile(destination).then(() => fs.writeFile(destination, content));
+        return fs.ensureFile(destination).then(() => fs.writeFile(destination, content)).then(() => ({
+            data: view,
+            filename,
+            config
+        }));
     }
 
     static getType(item: { type?: string, $ref?: string, items?: object, schema?: object }, config: IConfig, definitions: Definition[]): string {
@@ -85,7 +89,7 @@ export class Generator {
                     ...json,
                     methods: Method.parse({ ...json }, definitions, this.config),
                     definitions: definitions.filter(d => !d.generic),
-                    config: this.config
+                    config: this.config,
                 }
             })
             .then(view => Generator.render(view, templates.type, rename.file({ name: this.config.name }), this.config))

@@ -208,7 +208,7 @@ declare module "swagger-code-generate/src/generator" {
         genericTypes: Map<any, any>;
         config: IConfig;
         constructor(config: IConfig);
-        static render(view: object, template: string, filename: string, config: IConfig): any;
+        static render(view: any, template: string, filename: string, config: IConfig): any;
         static getType(item: {
             type?: string;
             $ref?: string;
