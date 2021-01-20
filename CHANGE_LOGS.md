@@ -6,3 +6,5 @@
 
 # 2.0
 * change class to functions
+# 2.1
+* maintain configuration globaly for micro-apps

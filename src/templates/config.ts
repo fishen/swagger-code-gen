@@ -1,19 +1,35 @@
+interface IRequestOptions {
+    url: string,
+    method?: string,
+    query?: Record<string, any>,
+    body?: any,
+    header?: Record<string, any>,
+}
 interface IConfig {
     /**
      * Make a HTTP request operation.
      * @param options The parameters required by the request.
      */
-    request(options: {
-        url: string,
-        method: string,
-        query?: Record<string, any>,
-        body?: any,
-        header?: Record<string, any>,
-    }): Promise<any>
+    request(options: IRequestOptions): Promise<any>
 }
 
-export default {
-    request(options) {
-        return Promise.reject('The [request] option is required');
+const GLOBAL_CONFIG_KEY = "__SWAGGER_CONFIG_REQUEST__";
+
+const defaultConfig = {
+    _request: null as any,
+    get request(): (options: IRequestOptions) => Promise<any> {
+        if (this._request) {
+            return this._request;
+        } else if (GLOBAL_CONFIG_KEY in globalThis) {
+            return globalThis[GLOBAL_CONFIG_KEY];
+        } else {
+            return () => Promise.reject('The [swagger-api#request] option is required') as Promise<any>;
+        }
+    },
+    set request(value: (options: IRequestOptions) => Promise<any>) {
+        this._request = value;
+        globalThis[GLOBAL_CONFIG_KEY] = value;
     }
-} as IConfig;
+}
+
+export default defaultConfig as IConfig;
