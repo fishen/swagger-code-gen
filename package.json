@@ -14,8 +14,7 @@
   },
   "keywords": [
     "swagger",
-    "codegen",
-    "inject"
+    "codegen"
   ],
   "author": "fisher <i.yu@qq.com>",
   "license": "ISC",

@@ -146,14 +146,10 @@ declare module "swagger-code-generate/src/definition" {
     import { ISwagger, ISwaggerDefinition } from 'swagger-code-generate/src/swagger';
     export class Definition {
         title: string;
-        type: string;
-        generic: boolean;
         name: string;
         basePath: string;
         host: string;
         properties?: Property[];
-        genericType: string;
-        genericProperties?: string[];
         constructor(data: ISwaggerDefinition, config: IConfig);
         static parse(swagger: ISwagger, config: IConfig): Definition[];
     }

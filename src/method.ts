@@ -50,7 +50,7 @@ export class Method {
                     const m = new Method({ method, path, ...value[method] }, config, swagger, definitions);
                     m.parameters.forEach((param) => {
                         if (param.in === 'body') {
-                            const d = definitions.find(d => d.type === param.type);
+                            const d = definitions.find(d => d.name === param.type);
                             param.properties = d && d.properties;
                         }
                     })

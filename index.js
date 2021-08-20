@@ -103,7 +103,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Generator = void 0;
 const fs_extra_1 = __importDefault(__webpack_require__(3));
 const mustache_1 = __importDefault(__webpack_require__(6));
-const lodash_1 = __importDefault(__webpack_require__(0));
 const node_fetch_1 = __importDefault(__webpack_require__(7));
 const path_1 = __importDefault(__webpack_require__(2));
 const definition_1 = __webpack_require__(8);
@@ -139,28 +138,7 @@ class Generator {
             return `${Generator.getType(items, config, definitions)}[]`;
         }
         else if (/«.+»$/.test(type)) {
-            const start = type.indexOf('«');
-            const end = type.lastIndexOf('»');
-            const genericType = type.substr(0, start);
-            const genericArgType = type.substring(start + 1, end);
-            let genericArgTypes = [];
-            if (/«.+»$/.test(genericArgType)) {
-                genericArgTypes = [Generator.getType({ type: genericArgType }, config, definitions)];
-            }
-            else {
-                if (!definitions.some(d => d.name === config.typeFormatter(genericArgType))) {
-                    genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config, definitions));
-                }
-                else {
-                    genericArgTypes = [config.typeFormatter(genericArgType)];
-                }
-            }
-            const genericTypes = genericType.split(',')
-                .map(t => t.trim())
-                .filter(x => x)
-                .map(type => Generator.getType({ type }, config, definitions))
-                .join(', ');
-            return `${genericTypes}<${genericArgTypes.join(', ')}>`;
+            return config.typeFormatter(type).replace(/[«,»]/g, '_');
         }
         else if (type.endsWith('[]')) {
             const arrType = type.substr(0, type.indexOf('[]')).trim();
@@ -176,28 +154,10 @@ class Generator {
             .then(res => res.json())
             .then(json => {
             const definitions = definition_1.Definition.parse(json, this.config);
-            definitions.filter(d => d.generic && !this.config.systemGenericTypes.includes(d.name) && d.properties)
-                .forEach(d => {
-                const def = definitions.find(x => x.title === d.name);
-                if (def) {
-                    if (def.genericProperties)
-                        return;
-                    def.genericProperties = lodash_1.default.differenceWith(d.properties, def.properties, (x, y) => x.name === y.name && x.type === y.type).map(x => x.name);
-                    def.properties.filter(d => def.genericProperties.includes(d.name)).forEach(p => p.generic = true);
-                }
-                else {
-                    let genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
-                    if (!genericProperties.length) {
-                        genericProperties = d.properties.filter(p => p.type === d.genericType).map(p => p.name).slice(0, 1);
-                    }
-                    d.properties.filter(d => genericProperties.includes(d.name)).forEach(p => p.generic = true);
-                    definitions.push({ ...d, genericProperties, title: d.name, type: d.name, generic: false });
-                }
-            });
             return {
                 ...json,
                 methods: method_1.Method.parse({ ...json }, definitions, this.config),
-                definitions: definitions.filter(d => !d.generic),
+                definitions,
                 config: this.config,
             };
         })
@@ -318,12 +278,7 @@ const lodash_1 = __importDefault(__webpack_require__(0));
 class Definition {
     constructor(data, config) {
         this.title = data.title;
-        this.type = generator_1.Generator.getType({ type: this.title }, config, []);
-        this.generic = /<.+>$/.test(this.type);
-        if (this.generic) {
-            this.genericType = this.type.substring(this.type.indexOf('<') + 1, this.type.length - 1);
-        }
-        this.name = this.generic ? this.type.substr(0, this.type.indexOf('<')) : this.type;
+        this.name = generator_1.Generator.getType({ type: this.title }, config, []);
         if (data.properties) {
             this.properties = Object.keys(data.properties).map((name) => new property_1.Property({ ...data.properties[name], name }, config, []));
             this.properties.forEach(p => p.required = lodash_1.default.includes(data.required, p.name));
@@ -388,7 +343,7 @@ class Method {
                 const m = new Method({ method, path, ...value[method] }, config, swagger, definitions);
                 m.parameters.forEach((param) => {
                     if (param.in === 'body') {
-                        const d = definitions.find(d => d.type === param.type);
+                        const d = definitions.find(d => d.name === param.type);
                         param.properties = d && d.properties;
                     }
                 });
@@ -520,7 +475,9 @@ exports.defaultConfig = {
         "Void": "void",
         "double": 'number',
         "byte": "number",
-        "LinkedList": "Array"
+        "LinkedList": "Array",
+        ArrayList: "Array",
+        Collection: "Array",
     },
 };
 

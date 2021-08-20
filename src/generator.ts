@@ -36,26 +36,7 @@ export class Generator {
         } else if (type === 'array') {
             return `${Generator.getType(items, config, definitions)}[]`;
         } else if (/«.+»$/.test(type)) {
-            const start = type.indexOf('«');
-            const end = type.lastIndexOf('»');
-            const genericType = type.substr(0, start);
-            const genericArgType = type.substring(start + 1, end);
-            let genericArgTypes = [];
-            if (/«.+»$/.test(genericArgType)) {
-                genericArgTypes = [Generator.getType({ type: genericArgType }, config, definitions)];
-            } else {
-                if (!definitions.some(d => d.name === config.typeFormatter(genericArgType))) {
-                    genericArgTypes = genericArgType.split(',').map(type => Generator.getType({ type }, config, definitions));
-                } else {
-                    genericArgTypes = [config.typeFormatter(genericArgType)];
-                }
-            }
-            const genericTypes = genericType.split(',')
-                .map(t => t.trim())
-                .filter(x => x)
-                .map(type => Generator.getType({ type }, config, definitions))
-                .join(', ');
-            return `${genericTypes}<${genericArgTypes.join(', ')}>`;
+            return config.typeFormatter(type).replace(/[«,»]/g, '_')
         } else if (type.endsWith('[]')) {
             const arrType = type.substr(0, type.indexOf('[]')).trim();
             return `${Generator.getType({ type: arrType }, config, definitions)}[]`;
@@ -69,26 +50,10 @@ export class Generator {
             .then(res => res.json())
             .then(json => {
                 const definitions = Definition.parse(json, this.config);
-                definitions.filter(d => d.generic && !this.config.systemGenericTypes.includes(d.name) && d.properties)
-                    .forEach(d => {
-                        const def = definitions.find(x => x.title === d.name);
-                        if (def) {
-                            if (def.genericProperties) return;
-                            def.genericProperties = _.differenceWith(d.properties, def.properties, (x, y) => x.name === y.name && x.type === y.type).map(x => x.name);
-                            def.properties.filter(d => def.genericProperties.includes(d.name)).forEach(p => p.generic = true);
-                        } else {
-                            let genericProperties = d.properties.filter(d => d.otherType).map(p => p.name);
-                            if (!genericProperties.length) {
-                                genericProperties = d.properties.filter(p => p.type === d.genericType).map(p => p.name).slice(0, 1);
-                            }
-                            d.properties.filter(d => genericProperties.includes(d.name)).forEach(p => p.generic = true);
-                            definitions.push({ ...d, genericProperties, title: d.name, type: d.name, generic: false })
-                        }
-                    });
                 return {
                     ...json,
                     methods: Method.parse({ ...json }, definitions, this.config),
-                    definitions: definitions.filter(d => !d.generic),
+                    definitions,
                     config: this.config,
                 }
             })
