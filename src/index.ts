@@ -1,7 +1,6 @@
 import path from 'path';
 import _ from 'lodash';
 import { Generator } from './generator';
-import { IHttp } from './http';
 import fs from 'fs-extra';
 import { IConfig, defaultConfig } from './config';
 
@@ -19,18 +18,19 @@ export function generate(config: Record<string, IConfig>) {
         .filter(name => name !== 'common')
         .map(name => merge({}, defaultConfig, config.common, config[name], { name }));
     const promises = configurations.map(cfg => new Generator(cfg).generate());
-    return Promise.all(promises).then(() => {
+    const log = (name: string, func: number) => console.log(`${name}:`, `function:${func}`);
+    return Promise.all(promises).then((items) => {
+        const total = items.reduce((total, item) => {
+            log(item.data.config.name, item.data.methods.length);
+            total.func += item.data.methods.length;
+            return total;
+        }, { func: 0, defs: 0 });
+        log('total', total.func);
         const cfg = merge(defaultConfig, config.common);
-        const apis = configurations.map(cfg => ({
-            module: path.basename(cfg.rename.file(cfg), '.ts'),
-            classname: cfg.rename.class(cfg),
-        }));
-        fs.copyFileSync(path.resolve(__dirname, './templates/type.ts'), path.join(cfg.destination, 'type.ts'))
-        return Generator.render({ apis }, cfg.templates.index, 'index.ts', cfg)
+        fs.copyFileSync(path.resolve(__dirname, './templates/config.ts'), path.join(cfg.destination, 'config.ts'))
     }).catch(console.error);
 }
 
 export type {
-    IConfig,
-    IHttp
+    IConfig
 }

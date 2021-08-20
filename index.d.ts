@@ -2,26 +2,14 @@
 declare module "swagger-code-generate/src/config" {
     export interface IConfig {
         /**
-         * Dependency injection configuration
-         */
-        injection?: Record<string, string>;
-        /**
          * Code generation directory
          * @default ./apis
          */
         destination?: string;
         /**
-         * The service's class decorators
-         */
-        decorators?: string[];
-        /**
-         * The default param keys which wiil be get by http.getDefaultValue.
-         */
-        defaults?: string[];
-        /**
          * Naming convention
          */
-        rename?: Partial<Record<'method' | 'parameter' | 'response' | 'class' | 'file', (...args: any) => string>>;
+        rename?: Partial<Record<'method' | 'parameter' | 'response' | 'file', (...args: any) => string>>;
         /**
          * Code template files
          */
@@ -133,6 +121,7 @@ declare module "swagger-code-generate/src/swagger" {
 declare module "swagger-code-generate/src/property" {
     import { ISwaggerDefinitionProperty } from 'swagger-code-generate/src/swagger';
     import { IConfig } from 'swagger-code-generate/src/config';
+    import { Definition } from 'definition';
     export class Property {
         name: string;
         type: string;
@@ -148,7 +137,7 @@ declare module "swagger-code-generate/src/property" {
             name: string;
             default?: any;
             required?: any;
-        }, config: IConfig);
+        }, config: IConfig, defs: Definition[]);
     }
 }
 declare module "swagger-code-generate/src/definition" {
@@ -163,6 +152,7 @@ declare module "swagger-code-generate/src/definition" {
         basePath: string;
         host: string;
         properties?: Property[];
+        genericType: string;
         genericProperties?: string[];
         constructor(data: ISwaggerDefinition, config: IConfig);
         static parse(swagger: ISwagger, config: IConfig): Definition[];
@@ -173,6 +163,7 @@ declare module "swagger-code-generate/src/param" {
     import { Method } from 'swagger-code-generate/src/method';
     import { IConfig } from 'swagger-code-generate/src/config';
     import { ISwaggerPathParameter, ParamType } from 'swagger-code-generate/src/swagger';
+    import { Definition } from 'definition';
     export class Param {
         name: string;
         type: string;
@@ -184,7 +175,7 @@ declare module "swagger-code-generate/src/param" {
         description?: string;
         passable: boolean;
         constructor(data: Partial<Param>);
-        static from(method: Method, params: ISwaggerPathParameter[], config: IConfig): Param[];
+        static from(method: Method, params: ISwaggerPathParameter[], config: IConfig, definitions: Definition[]): Param[];
     }
 }
 declare module "swagger-code-generate/src/method" {
@@ -202,60 +193,33 @@ declare module "swagger-code-generate/src/method" {
         tags?: string[];
         name: string;
         parameters: Param[];
-        defaults?: {
-            key: string;
-            value: string[];
-        }[];
         response: string;
         constructor(data: ISwaggerPath & {
             path: string;
             method: string;
-        }, config: IConfig, swagger: ISwagger);
-        setDefault(param: Param, defaults: string[]): void;
+        }, config: IConfig, swagger: ISwagger, definitions: Definition[]);
         static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[];
     }
 }
 declare module "swagger-code-generate/src/generator" {
     import { IConfig } from 'swagger-code-generate/src/config';
+    import { Definition } from 'swagger-code-generate/src/definition';
     export class Generator {
         genericTypes: Map<any, any>;
         config: IConfig;
         constructor(config: IConfig);
-        static render(view: object, template: string, filename: string, config: IConfig): any;
+        static render(view: any, template: string, filename: string, config: IConfig): any;
         static getType(item: {
             type?: string;
             $ref?: string;
             items?: object;
             schema?: object;
-        }, config: IConfig): string;
+        }, config: IConfig, definitions: Definition[]): string;
         generate(): Promise<any>;
     }
 }
-declare module "swagger-code-generate/src/http" {
-    export interface IHttp {
-        /**
-         * Make a HTTP request operation.
-         * @param options The parameters required by the request.
-         */
-        request(options: {
-            url: string;
-            method: string;
-            query?: Record<string, any>;
-            body?: any;
-            header?: Record<string, any>;
-        }): Promise<any>;
-        /**
-         * Get the default value
-         * @param name The param name
-         * @param from The param source 'path','query','body','header'.
-         * @param url The api url string.
-         */
-        getDefaultValue?(name: string, from: string, url: string): any;
-    }
-}
 declare module "swagger-code-generate" {
-    import { IHttp } from 'swagger-code-generate/src/http';
     import { IConfig } from 'swagger-code-generate/src/config';
-    export function generate(config: Record<string, IConfig>): Promise<any>;
-    export type { IConfig, IHttp };
+    export function generate(config: Record<string, IConfig>): Promise<void>;
+    export type { IConfig };
 }

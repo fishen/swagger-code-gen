@@ -32,86 +32,73 @@ generate({
 //.......type defenations.......
 
 /**
- * Swagger Generator
- * @version 2.4.14
- * @see http:///apiswagger-ui.html
+ * Downloads a pre-generated file
+ * @param fileId The http request path parameters.
+ * @param header The http request header parameters.
  */
-@Injectable()
-export default class {
+export function getGenDownloadFileId(fileId: string, header?: object, ): Promise<string> {
+    const url = `/api/gen/download/${fileId}`;
+    return request({ url, method: 'get', header, });
+}
 
-    constructor(
-        @Inject('http') private http: IHttp
-    ) { }
+/**
+ * Returns options for a client library
+ * @param language The target language for the client library
+ * @param header The http request header parameters.
+ */
+export function getGenClientsLanguage(language: string, header?: object, ): Promise<object> {
+    const url = `/api/gen/clients/${language}`;
+    return request({ url, method: 'get', header, });
+}
 
-    /**
-     * Downloads a pre-generated file
-     * @param fileId The http request path parameters.
-     * @param header The http request header parameters.
-     */
-    getGenDownloadFileId(fileId: string, header?: object, ): Promise<string> {
-        const url = `/api/gen/download/${fileId}`;
-        return this.http.request({ url, method: "get", header, });
-    }
+/**
+ * Generates a client library
+ * @param language The target language for the client library
+ * @param body The http request body parameters.
+ * @param header The http request header parameters.
+ */
+export function postGenClientsLanguage(language: string, body?: GeneratorInput, header?: object, ): Promise<$Required<ResponseCode>> {
+    const url = `/api/gen/clients/${language}`;
+    return request({ url, method: 'post', body, header, });
+}
 
-    /**
-     * Returns options for a client library
-     * @param language The target language for the client library
-     * @param header The http request header parameters.
-     */
-    getGenClientsLanguage(language: string, header?: object, ): Promise<object> {
-        const url = `/api/gen/clients/${language}`;
-        return this.http.request({ url, method: "get", header, });
-    }
+/**
+ * Returns options for a server framework
+ * @param framework The target language for the server framework
+ * @param header The http request header parameters.
+ */
+export function getGenServersFramework(framework: string, header?: object, ): Promise<object> {
+    const url = `/api/gen/servers/${framework}`;
+    return request({ url, method: 'get', header, });
+}
 
-    /**
-     * Generates a client library
-     * @param language The target language for the client library
-     * @param body The http request body parameters.
-     * @param header The http request header parameters.
-     */
-    postGenClientsLanguage(language: string, body?: GeneratorInput, header?: object, ): Promise<ResponseCode> {
-        const url = `/api/gen/clients/${language}`;
-        return this.http.request({ url, method: "post", body, header, });
-    }
+/**
+ * Generates a server library
+ * @param framework framework
+ * @param body The http request body parameters.
+ * @param header The http request header parameters.
+ */
+export function postGenServersFramework(framework: string, body?: GeneratorInput, header?: object, ): Promise<$Required<ResponseCode>> {
+    const url = `/api/gen/servers/${framework}`;
+    return request({ url, method: 'post', body, header, });
+}
 
-    /**
-     * Returns options for a server framework
-     * @param framework The target language for the server framework
-     * @param header The http request header parameters.
-     */
-    getGenServersFramework(framework: string, header?: object, ): Promise<object> {
-        const url = `/api/gen/servers/${framework}`;
-        return this.http.request({ url, method: "get", header, });
-    }
+/**
+ * Gets languages supported by the client generator
+ * @param header The http request header parameters.
+ */
+export function getGenClients(header?: object, ): Promise<string[]> {
+    const url = `/api/gen/clients`;
+    return request({ url, method: 'get', header, });
+}
 
-    /**
-     * Generates a server library
-     * @param framework framework
-     * @param body The http request body parameters.
-     * @param header The http request header parameters.
-     */
-    postGenServersFramework(framework: string, body?: GeneratorInput, header?: object, ): Promise<ResponseCode> {
-        const url = `/api/gen/servers/${framework}`;
-        return this.http.request({ url, method: "post", body, header, });
-    }
-
-    /**
-     * Gets languages supported by the client generator
-     * @param header The http request header parameters.
-     */
-    getGenClients(header?: object, ): Promise<string[]> {
-        const url = `/api/gen/clients`;
-        return this.http.request({ url, method: "get", header, });
-    }
-
-    /**
-     * Gets languages supported by the server generator
-     * @param header The http request header parameters.
-     */
-    getGenServers(header?: object, ): Promise<string[]> {
-        const url = `/api/gen/servers`;
-        return this.http.request({ url, method: "get", header, });
-    }
+/**
+ * Gets languages supported by the server generator
+ * @param header The http request header parameters.
+ */
+export function getGenServers(header?: object, ): Promise<string[]> {
+    const url = `/api/gen/servers`;
+    return request({ url, method: 'get', header, });
 }
 ```
 # Configuration
@@ -125,36 +112,18 @@ export default class {
 ```ts
 export interface IConfig {
     /**
-     * Dependency injection configuration
-     * @default {
-     *   module: 'mp-inject',
-     *   injectable: 'Injectable',
-     *   inject: 'Inject',
-     *   http: "'http'",
-     * },
-     */
-    injection?: Record<string, string>;
-    /**
      * Code generation directory
      * @default './apis'
      */
     destination?: string;
     /**
-     * The service's class decorators
-     */
-    decorators?: string[];
-    /**
-     * The default param keys which will be get by http.getDefaultValue.
-     */
-    defaults?: string[];
-    /**
      * Naming convention
      */
-    rename?: Partial<Record<'method' | 'parameter' | 'response' | 'class' | 'file', (...args: any) => string>>;
+    rename?: Partial<Record<'method' | 'parameter' | 'response' | 'file', (...args: any) => string>>;
     /**
      * Code template files
      */
-    templates?: Partial<Record<'type' | 'index', string>>;
+    templates?: Partial<Record<'type', string>>;
     /**
      * The items want to ignore
      */

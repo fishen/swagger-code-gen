@@ -1,6 +1,7 @@
 import { ISwaggerDefinitionProperty } from './swagger';
 import { IConfig } from './config';
 import { Generator } from './generator';
+import { Definition } from 'definition';
 
 
 export class Property {
@@ -14,9 +15,9 @@ export class Property {
     generic: boolean;
     isArray: boolean;
     otherType: boolean;
-    constructor(data: ISwaggerDefinitionProperty & { name: string, default?: any, required?: any }, config: IConfig) {
+    constructor(data: ISwaggerDefinitionProperty & { name: string, default?: any, required?: any }, config: IConfig, defs: Definition[]) {
         this.name = data.name;
-        this.type = Generator.getType(data, config);
+        this.type = Generator.getType(data, config, defs);
         this.description = data.description;
         this.default = data.default;
         this.example = data.example;

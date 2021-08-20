@@ -5,11 +5,12 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "module": "commonjs",
     "target": "esnext",
     "allowJs": false,
     "checkJs": false,
+    "baseUrl": "src",
     "downlevelIteration": true,
     "typeRoots": [
       "typings"
@@ -20,7 +21,7 @@
     ]
   },
   "include": [
-    "apis/*.ts",
+    "apis/**/*.ts",
     "src/**/*.ts",
     "test/**/*.ts"
   ],

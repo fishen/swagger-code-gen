@@ -1,10 +1,10 @@
 {
   "name": "swagger-code-generate",
-  "version": "1.1.0",
+  "version": "2.2.0",
   "description": "A swagger code generator for typescript",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/**/*.{ts,tsx}",
+    "test": "npm run build&&node test/example.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "fix": "tslint -c tslint.json 'src/**/*.ts' --fix",
     "type-check": "tsc --noEmit",

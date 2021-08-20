@@ -15,9 +15,8 @@ export class Method {
     tags?: string[];
     name: string;
     parameters: Param[];
-    defaults?: { key: string, value: string[] }[];
     response: string;
-    constructor(data: ISwaggerPath & { path: string, method: string }, config: IConfig, swagger: ISwagger) {
+    constructor(data: ISwaggerPath & { path: string, method: string }, config: IConfig, swagger: ISwagger, definitions: Definition[]) {
         this.method = data.method;
         this.path = data.path;
         this.url = `${swagger.basePath}/${data.path}`.replace(/\/+/g, '/');
@@ -32,41 +31,31 @@ export class Method {
         this.summary = data.summary;
         this.tags = data.tags;
         const resSchema = data.responses[200] && data.responses[200].schema;
-        this.response = Generator.getType(resSchema, config);
+        this.response = Generator.getType(resSchema, config, definitions);
         if (_.isFunction(config.rename.response)) {
             this.response = config.rename.response({ type: this.response });
         }
         this.name = config.rename.method(this);
-        this.parameters = Param.from(this, data.parameters, config);
+        this.parameters = Param.from(this, data.parameters, config, definitions);
         this.parameters.filter(p => p.in === 'path')
             .map(p => new RegExp(`\{(${p.name})\}`, 'g'))
             .forEach(reg => this.url = this.url.replace(reg, "${$1}"));
     }
-    setDefault(param: Param, defaults: string[]) {
-        if (!Array.isArray(param.properties)) return;
-        const defaultNames = param.properties.filter(p => defaults.includes(p.name)).map(p => p.name);
-        if (!defaultNames.length) return;
-        param.type = `$Optional<${param.type}, ${defaultNames.map(p => `'${p}'`).join(' | ')}>`;
-        this.defaults = this.defaults || [];
-        this.defaults.push({ key: param.in, value: defaultNames });
-    }
     static parse(swagger: ISwagger, definitions: Definition[], config: IConfig): Method[] {
         const methods = Object.keys(swagger.paths)
+            .filter(key => !config.ignores || !config.ignores.path || !(config.ignores.path.includes(key)))
             .reduce((result, path) => {
                 const value = swagger.paths[path];
                 Object.keys(value).map(method => {
-                    const m = new Method({ method, path, ...value[method] }, config, swagger);
+                    const m = new Method({ method, path, ...value[method] }, config, swagger, definitions);
                     m.parameters.forEach((param) => {
                         if (param.in === 'body') {
                             const d = definitions.find(d => d.type === param.type);
                             param.properties = d && d.properties;
                         }
-                        m.setDefault(param, config.defaults);
                     })
                     for (let index = m.parameters.length - 1; index >= 0; index--) {
                         const p = m.parameters[index];
-                        const defaults = m.defaults && m.defaults.find(x => x.key === p.in);
-                        p.required = !p.properties || p.properties.some(p => p.required && (!defaults || !defaults.value.includes(p.name)));
                         p.required = p.required ? p.required : !m.parameters.slice(index).every(p => !p.required);
                     }
                     result.push(m);
@@ -74,6 +63,5 @@ export class Method {
                 return result;
             }, [] as Method[]);
         return methods;
-
     }
 }
