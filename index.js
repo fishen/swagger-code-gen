@@ -152,7 +152,7 @@ class Generator {
             throw new Error("The option 'source' is required");
         return node_fetch_1.default(source)
             .then(res => res.json())
-            .then(json => {
+            .then((json) => {
             const definitions = definition_1.Definition.parse(json, this.config);
             return {
                 ...json,

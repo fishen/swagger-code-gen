@@ -48,7 +48,7 @@ export class Generator {
         if (!source) throw new Error("The option 'source' is required");
         return fetch(source)
             .then(res => res.json())
-            .then(json => {
+            .then((json:any) => {
                 const definitions = Definition.parse(json, this.config);
                 return {
                     ...json,
