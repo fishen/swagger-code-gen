@@ -28,7 +28,7 @@ const defaultConfig = {
     },
     set request(value: (options: IRequestOptions) => Promise<any>) {
         this._request = value;
-        if(globalThis) {
+        if (globalThis) {
             globalThis[GLOBAL_CONFIG_KEY] = value;
         }
     }
