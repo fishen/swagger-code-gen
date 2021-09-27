@@ -20,7 +20,7 @@ const defaultConfig = {
     get request(): (options: IRequestOptions) => Promise<any> {
         if (this._request) {
             return this._request;
-        } else if (GLOBAL_CONFIG_KEY in globalThis) {
+        } else if (globalThis && GLOBAL_CONFIG_KEY in globalThis) {
             return globalThis[GLOBAL_CONFIG_KEY];
         } else {
             return () => Promise.reject('The [swagger-api#request] option is required') as Promise<any>;
@@ -28,7 +28,9 @@ const defaultConfig = {
     },
     set request(value: (options: IRequestOptions) => Promise<any>) {
         this._request = value;
-        globalThis[GLOBAL_CONFIG_KEY] = value;
+        if(globalThis) {
+            globalThis[GLOBAL_CONFIG_KEY] = value;
+        }
     }
 }
 
