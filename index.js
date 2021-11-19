@@ -140,7 +140,7 @@ class Generator {
         else if (/«.+»$/.test(type)) {
             return config.typeFormatter(type).replace(/[«,»]/g, '_');
         }
-        else if (type.endsWith('[]')) {
+        else if (type && type.endsWith('[]')) {
             const arrType = type.substr(0, type.indexOf('[]')).trim();
             return `${Generator.getType({ type: arrType }, config, definitions)}[]`;
         }
