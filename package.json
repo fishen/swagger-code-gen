@@ -1,6 +1,6 @@
 {
   "name": "swagger-code-generate",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "A swagger code generator for typescript",
   "main": "index.js",
   "scripts": {
