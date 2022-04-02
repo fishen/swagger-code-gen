@@ -5,3 +5,4 @@ src/apis/
 /templates/
 *apis
 /test
+.DS_Store
