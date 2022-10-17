@@ -21,7 +21,7 @@ export type KeyValue<K, V> = {
 /**
  * {{{title}}}
  **/
-interface {{&name}} {
+export interface {{&name}} {
     {{#properties}}
     /**
      * {{{description}}}.{{{originTitle}}}
@@ -44,7 +44,7 @@ interface {{&name}} {
 {{#parameters}}
 {{^referenced}}
 {{#properties.length}}
-interface {{&typeName}} {
+export interface {{&typeName}} {
     {{#properties}}
     /**
      * {{{description}}}
